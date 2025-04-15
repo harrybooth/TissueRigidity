@@ -1,3 +1,5 @@
+using Distributions
+
 function get_params(p_vector::Vector{Float64})
 
     p = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
@@ -51,6 +53,19 @@ function mse_alpha_profile(sol,t_grid_alpha,alpha_profiles)
     return error
 end
 
+function get_level_x(sol,c_level)
+    c_level_id = [findall(sol[:,1] .>= c_level) for sol in sol.u]
+    c_level_x = [length(id_list) != 0 ? tissue[maximum(id_list)] : 0. for id_list in c_level_id];
+    return  c_level_x
+end
+
+function get_level_x(sol,c_level,t_grid)
+    c_level_id = [findall(sol(t)[:,1] .>= c_level) for t in t_grid]
+    c_level_x = [length(id_list) != 0 ? tissue[maximum(id_list)] : 0. for id_list in c_level_id];
+    return  c_level_x
+end
+
+
 function get_summary_metrics(p_vector,prob,xmax_data,alpha_data)
 
     p,p_cp,p_lm = get_params(p_vector)
@@ -66,7 +81,8 @@ function get_summary_metrics(p_vector,prob,xmax_data,alpha_data)
     c_max_cp = maximum(reduce(vcat,[sol_cp(t)[:,1] for t in t_grid ]))
     c_max_wt = maximum(reduce(vcat,[sol(t)[:,1] for t in t_grid]))
 
-    c_level = 0.2*max(c_max_cp,c_max_wt)
+    c_level = 0.2*min(c_max_cp,c_max_wt)
+    # c_level = 0.2*c_max_wt
 
     level_x_wt = get_level_x(sol,c_level,t_grid);
     level_x_cp = get_level_x(sol_cp,c_level,t_grid)
@@ -91,7 +107,7 @@ function get_summary_metrics(p_vector,prob,xmax_data,alpha_data)
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,eachcol(alpha_data[:,2:end]))
 
-    return (wt_t0,cp_t0,wt_xMax,cp_xMax,lm_xMax,wt_d0,cp_d0,lm_d0,xmax_peak_ratio,xmax_mse,alpha_mse)
+    return (wt_t0,cp_t0,wt_xMax,cp_xMax,lm_xMax,wt_d0,cp_d0,lm_d0,xmax_peak_ratio,xmax_mse,alpha_mse,(sol.retcode,sol_cp.retcode,sol_lm.retcode))
 end
     
 
@@ -109,10 +125,11 @@ function loss(p_vector,prob,xmax_data,alpha_data)
     c_max_cp = maximum(reduce(vcat,[sol_cp(t)[:,1] for t in t_grid ]))
     c_max_wt = maximum(reduce(vcat,[sol(t)[:,1] for t in t_grid]))
 
-    c_level = 0.2*max(c_max_cp,c_max_wt)
+    c_level = 0.2*min(c_max_cp,c_max_wt)
+    # c_level = 0.2*c_max_wt
 
     level_x_wt = get_level_x(sol,c_level,t_grid);
-    
+
     wt_t0 = t_grid[argmax(level_x_wt)];
 
     xmax_mse = mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
@@ -124,7 +141,6 @@ function loss(p_vector,prob,xmax_data,alpha_data)
     return sum(xmax_mse) + alpha_mse
 end
 
-using Distributions
 
 function generate_param_set(lb,ub,N)
     all_p = zeros(N,length(lb))
@@ -132,5 +148,5 @@ function generate_param_set(lb,ub,N)
         all_p[:,n] .= rand(Uniform(lbi,ubi),N)
     end
 
-    all_p
+    return [collect(p) for p in eachrow(all_p)]
 end

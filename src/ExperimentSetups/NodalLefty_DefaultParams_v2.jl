@@ -38,3 +38,7 @@ const E_star = α_min^(-1) - α0^(-1)
 const default_mN = mN
 const default_mL = mL
 const default_mNL = mNL
+
+#########
+
+N_sim = 2

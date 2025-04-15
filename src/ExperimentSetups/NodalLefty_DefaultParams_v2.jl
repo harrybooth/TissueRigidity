@@ -41,4 +41,4 @@ const default_mNL = mNL
 
 #########
 
-N_sim = 2
+N_sim = 100

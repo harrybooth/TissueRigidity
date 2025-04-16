@@ -53,3 +53,19 @@ function save_dynamics_movie(sol)
         sleep(0.05);
     end
 end
+
+function calculate_entropy(ptest,n_bin,lb,ub)
+
+    # bin_boundaries = LinRange(lb[p_names_id[p_name]],ub[p_names_id[p_name]],n_bin+1)
+    bin_boundaries = LinRange(lb,ub,n_bin+1)
+
+    n_ptest = length(ptest)
+
+    uni_prob = fit(Histogram, ptest, bin_boundaries; closed = :left) 
+
+    ptest_bins = map(f->StatsBase.binindex(uni_prob, f),ptest);
+
+    prob = [count(x->x==i,ptest_bins) / n_ptest for i in 1:n_bin]
+
+    entropy(prob,n_bin)
+end

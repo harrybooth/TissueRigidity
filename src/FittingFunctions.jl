@@ -107,7 +107,7 @@ function get_summary_metrics(p_vector,prob,xmax_data,alpha_data)
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,eachcol(alpha_data[:,2:end]))
 
-    return (wt_t0,cp_t0,wt_xMax,cp_xMax,lm_xMax,wt_d0,cp_d0,lm_d0,xmax_peak_ratio,xmax_mse,alpha_mse,(sol.retcode,sol_cp.retcode,sol_lm.retcode))
+    return (wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,alpha_mse = alpha_mse,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode))
 end
     
 

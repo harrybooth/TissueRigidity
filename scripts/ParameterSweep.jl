@@ -58,8 +58,6 @@ for exp_name in all_experiments
 
     @everywhere include(srcdirx("ExperimentSetups/" * $exp_name * ".jl"))
 
-    pv_orig = [DN0,DL0,kN0,kL0,kE,kNL,σN0,σL0,Na,NL,NE,LN,s0]
-
     p,p_cp,p_lm = get_params(pv_orig)
 
     tspan = (0,Inf)
@@ -79,8 +77,8 @@ for exp_name in all_experiments
     lb[1:2] = 0.9 .* lb[1:2]
     ub[1:2] = 1.1 .* ub[1:2]
 
-    lb[3:end] = 0.5 .* lb[3:end]
-    ub[3:end] = 2 .* ub[3:end];
+    lb[3:end] = (1 - γ) .* lb[3:end]
+    ub[3:end] = (1 + γ) .* ub[3:end];
 
     p_set = generate_param_set(lb,ub,N_sim);
 

@@ -29,12 +29,23 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
     dE =  @view du[:,3]
     dα =  @view du[:,4]
 
-    DN = D.(DN0,ϕ0,ϕ.(α))
-    DL = D.(DL0,ϕ0,ϕ.(α))
-    kN = k.(kN0,ϕ0,β,ϕ.(α))
-    kL = k.(kL0,ϕ0,β,ϕ.(α))
-    σN = σ.(σN0,ϕ0,ϕ.(α))
-    σL = σ.(σL0,ϕ0,ϕ.(α))
+    DN = NaN
+    DL = NaN
+    kN = NaN
+    kL = NaN
+    σN = NaN
+    σL = NaN
+
+    try
+        DN = D.(DN0,ϕ0,ϕ.(α))
+        DL = D.(DL0,ϕ0,ϕ.(α))
+        kN = k.(kN0,ϕ0,β,ϕ.(α))
+        kL = k.(kL0,ϕ0,β,ϕ.(α))
+        σN = σ.(σN0,ϕ0,ϕ.(α))
+        σL = σ.(σL0,ϕ0,ϕ.(α))
+    catch
+        push!(p_error,p)
+    end
 
     σE = E_star*kE
 
@@ -43,19 +54,19 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
     dN[1] = DN[1]*h*(N[2] - N[1] + (s0/DN[1])) - kN[1]*N[1] - kNL*N[1]*(1/(1+(LN/L[1])^mNL)) + ν(N[1],σN[1],Na,mN)
     dL[1] = DL[1]*h*(L[2] - L[1]) - kL[1]*L[1] + ν(L[1],σL[1],NL,mL)
     dE[1] = ν(N[1],σE,NE,1) - kE*E[1]
-    dα[1] =  -((E[1] + α0^(-1))^(-2))*(ν(N[1],σE,NE,1) - kE*E[1])
+    dα[1] =  -(E[1] + α0^(-1))^(-2)*(ν(N[1],σE,NE,1) - kE*E[1])
 
     @inbounds for j in 2:Nc-1
         dN[j] =  h*(DN[j]*(N[j-1] + N[j+1] - 2*N[j]) + (DN[j+1] - DN[j])*(N[j+1]- N[j])) - kN[j]*N[j]  - kNL*N[j]*(1/(1+(LN/L[j])^2)) + ν(N[j],σN[j],Na,mN)
         dL[j] =  h*(DL[j]*(L[j-1] + L[j+1] - 2*L[j]) + (DL[j+1] - DL[j])*(L[j+1]- L[j])) - kL[j]*L[j] + ν(N[j],σL[j],NL,mL)
         dE[j] = ν(N[j],σE,NE,1) - kE*E[j]
-        dα[j] =  -((E[j] + α0^(-1))^(-2))*(ν(N[j],σE,NE,1) - kE*E[j])
+        dα[j] =  -(E[j] + α0^(-1))^(-2)*(ν(N[j],σE,NE,1) - kE*E[j])
     end
 
     dN[Nc] = DN[Nc]*h*(N[Nc-1] - N[Nc]) - kN[Nc]*N[Nc] - kNL*N[Nc]*(1/(1+(LN/L[Nc])^2)) + ν(N[Nc],σN[Nc],Na,mN)
     dL[Nc] = DL[Nc]*h*(L[Nc-1] - L[Nc]) - kL[Nc]*L[Nc] + ν(L[Nc],σL[Nc],NL,mL)
     dE[Nc] = ν(N[Nc],σE,NE,1) - kE*E[Nc]
-    dα[Nc] =  -((E[Nc] + α0^(-1))^(-2))*(ν(N[Nc],σE,NE,1) - kE*E[Nc])
+    dα[Nc] =  -(E[Nc] + α0^(-1))^(-2)*(ν(N[Nc],σE,NE,1) - kE*E[Nc])
 
     dα[dα .> 0] .= 0.
 

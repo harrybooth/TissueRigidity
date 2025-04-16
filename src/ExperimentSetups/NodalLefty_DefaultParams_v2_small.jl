@@ -42,3 +42,7 @@ const default_mNL = mNL
 #########
 
 N_sim = 1000
+
+γ = 0.5
+
+pv_orig = [DN0,DL0,kN0,kL0,kE,kNL,σN0,σL0,Na,NL,NE,LN,s0]

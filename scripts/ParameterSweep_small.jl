@@ -13,7 +13,7 @@ using ClusterManagers
 
 projectdir_static = dirname(Base.active_project())
 
-cluster_calc = false
+cluster_calc = true
 
 if cluster_calc
     n_tasks = parse(Int, ENV["SLURM_NTASKS"])

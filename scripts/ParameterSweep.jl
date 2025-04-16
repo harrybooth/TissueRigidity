@@ -50,7 +50,7 @@ end
 @everywhere include(srcdirx("NodalLefty_E.jl"))
 @everywhere include(srcdirx("FittingFunctions.jl"))
 
-all_experiments = ["NodalLefty_DefaultParams_v2"]
+all_experiments = ["NodalLefty_DefaultParams_v3"]
 
 @everywhere include(scriptsdirx("LoadData.jl"))
 

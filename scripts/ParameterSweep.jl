@@ -82,7 +82,7 @@ for exp_name in all_experiments
 
     p_set = generate_param_set(lb,ub,N_sim);
 
-    sim = pmap(pv-> get_summary_metrics(pv,prob,data,alpha_data),p_set)
+    sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data),p_set)
 
     summaryd = Dict{String, Any}()
 

@@ -3,7 +3,7 @@ const DL0 = 15.
 const kN0 = 1.25*1e-6
 const kL0 = 7.5*1e-7
 const kE =  5*1e-4
-const kNL = 10.
+const kNL = 0.1
 const σN0 = 1e-2
 const σL0 = 12*1e-3 # alpha_L in Diana?
 const Na = 31.6228
@@ -29,7 +29,6 @@ const ϕ_min = 0.01818;
 const α_min = 0.7
 const α0 = 0.881586152184903
 const ϕ0 = ϕ(α0)
-# const β = 1.
 const β = 0.1
 
 const E_star = α_min^(-1) - α0^(-1)
@@ -42,8 +41,8 @@ const default_mNL = mNL
 
 #########
 
-N_sim = 100000
+N_sim = 1000000
 
-γ = 0.8
+γ = 0.9
 
 pv_orig = [DN0,DL0,kN0,kL0,kE,kNL,σN0,σL0,Na,NL,NE,LN,s0]

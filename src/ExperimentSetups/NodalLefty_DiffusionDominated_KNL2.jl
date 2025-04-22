@@ -3,7 +3,7 @@ const DL0 = 15.
 const kN0 = 1.25*1e-6
 const kL0 = 7.5*1e-7
 const kE =  5*1e-4
-const kNL = 10.
+const kNL = 150.
 const σN0 = 1e-2
 const σL0 = 12*1e-3 # alpha_L in Diana?
 const Na = 31.6228
@@ -42,7 +42,7 @@ const default_mNL = mNL
 
 #########
 
-N_sim = 30000
+N_sim = 100000
 
 γ = 0.8
 

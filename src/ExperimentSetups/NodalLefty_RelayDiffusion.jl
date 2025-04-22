@@ -5,7 +5,7 @@ const dx = step(tissue)
 
 const αc_tri = 0.8662;
 const αc_quad = 0.707;
-const ϕ_min = 0.01818;
+const ϕ_min = 0.001
 
 const α_min = 0.7
 const α0 = 0.881586152184903

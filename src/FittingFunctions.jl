@@ -1,7 +1,7 @@
 using Distributions
 
-const de_abstol = 1e-10
-const de_reltol = 1e-8
+const de_abstol = 1e-11
+const de_reltol = 1e-9
 
 function get_params(p_vector::Vector{Float64})
 

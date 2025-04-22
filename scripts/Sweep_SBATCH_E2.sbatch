@@ -10,4 +10,4 @@
 
 # Initialise Julia
 ml Julia/1.8.2-linux-x86_64
-julia ParameterSweep.jl
+julia ParameterSweep_E2.jl

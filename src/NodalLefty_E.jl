@@ -46,13 +46,13 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
     dα[1] =  -((E[1] + α0^(-1))^(-2))*(ν(N[1],σE,NE,1) - kE*E[1])
 
     @inbounds for j in 2:Nc-1
-        dN[j] =  h*(DN[j]*(N[j-1] + N[j+1] - 2*N[j]) + (DN[j+1] - DN[j])*(N[j+1]- N[j])) - kN[j]*N[j]  - kNL*N[j]*(1/(1+(LN/L[j])^2)) + ν(N[j],σN[j],Na,mN)
+        dN[j] =  h*(DN[j]*(N[j-1] + N[j+1] - 2*N[j]) + (DN[j+1] - DN[j])*(N[j+1]- N[j])) - kN[j]*N[j]  - kNL*N[j]*(1/(1+(LN/L[j])^mNL)) + ν(N[j],σN[j],Na,mN)
         dL[j] =  h*(DL[j]*(L[j-1] + L[j+1] - 2*L[j]) + (DL[j+1] - DL[j])*(L[j+1]- L[j])) - kL[j]*L[j] + ν(N[j],σL[j],NL,mL)
         dE[j] = ν(N[j],σE,NE,1) - kE*E[j]
         dα[j] =  -((E[j] + α0^(-1))^(-2))*(ν(N[j],σE,NE,1) - kE*E[j])
     end
 
-    dN[Nc] = DN[Nc]*h*(N[Nc-1] - N[Nc]) - kN[Nc]*N[Nc] - kNL*N[Nc]*(1/(1+(LN/L[Nc])^2)) + ν(N[Nc],σN[Nc],Na,mN)
+    dN[Nc] = DN[Nc]*h*(N[Nc-1] - N[Nc]) - kN[Nc]*N[Nc] - kNL*N[Nc]*(1/(1+(LN/L[Nc])^mNL)) + ν(N[Nc],σN[Nc],Na,mN)
     dL[Nc] = DL[Nc]*h*(L[Nc-1] - L[Nc]) - kL[Nc]*L[Nc] + ν(L[Nc],σL[Nc],NL,mL)
     dE[Nc] = ν(N[Nc],σE,NE,1) - kE*E[Nc]
     dα[Nc] =  -((E[Nc] + α0^(-1))^(-2))*(ν(N[Nc],σE,NE,1) - kE*E[Nc])

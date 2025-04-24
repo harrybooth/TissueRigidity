@@ -14,23 +14,17 @@ const β = 0.1
 
 const E_star = α_min^(-1) - α0^(-1)
 
-########
-
-const default_mN = mN
-const default_mL = mL
-const default_mNL = mNL
 
 #########
 
 const DN0 = 1.95
 const kN0 = 0.5*1e-2
-const s0 = 5. # s0 / 2 as diana scales by dx/2?
+const s0_a = 5. # s0 / 2 as diana scales by dx/2?
 
 const λ = sqrt(DN0/kN0)
-const c0  = s0/(KN0*λ*(1-exp(-L/λ)))
+const c0  = s0_a/(kN0*λ*(1-exp(-L/λ)))
 const N0 = 0.95*c0
 const σ_crit = kN0*N0
-
 
 
 const σN0 = 1.5*σ_crit
@@ -51,6 +45,11 @@ const mN = 2 # ma in Diana?
 const mL = 8 
 const mNL = 2
 
+const default_mN = mN
+const default_mL = mL
+const default_mNL = mNL
+
+const s0 = 5.
 
 ############
 

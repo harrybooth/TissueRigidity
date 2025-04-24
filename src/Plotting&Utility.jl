@@ -69,3 +69,19 @@ function calculate_entropy(ptest,n_bin,lb,ub)
 
     entropy(prob,n_bin)
 end
+
+
+metric_names = [:wt_t0,:cp_t0,:wt_xMax,:cp_xMax,:lm_xMax,:wt_d0,:cp_d0,:lm_d0,:xmax_peak_ratio,:xmax_mse,:alpha_mse,:cp_lprod_t0,:wt_lprod_t0,:retcodes]
+metric_names_string = Dict(:wt_t0 => "wt_t0",:cp_t0=>"cp_t0",:wt_xMax=>"wt_xMax",:cp_xMax=>"cp_xMax",:lm_xMax=>"lm_xMax",:wt_d0=>"wt_d0",:cp_d0=>"cp_d0",:lm_d0=>"lm_d0",:xmax_peak_ratio=>"xmax_peak_ratio",:xmax_mse=>"xmax_mse",:alpha_mse=>"alpha_mse",:cp_lprod_t0=>"cp_lprod_t0",:wt_lprod_t0=>"wt_lprod_t0")
+
+metric_names_latex = Dict(:wt_t0 => L"t_{\text{WT}}",:cp_t0 => L"t_{\text{wnt11}}",:wt_xMax=>L"X_{\text{max}}^{\text{WT}}",:cp_xMax=>L"X_{\text{max}}^{\text{wnt11}}",
+:lm_xMax=>L"X_{\text{max}}^{\text{lefty}}",:wt_d0=>L"X_{\text{end}}^{\text{WT}} / X_{\text{max}}^{\text{WT}}",:cp_d0=>L"X_{\text{end}}^{\text{wnt11}} / X_{\text{max}}^{\text{wnt11}}",
+:lm_d0=>L"X_{\text{end}}^{\text{lefty}} / X_{\text{max}}^{\text{lefty}}",:xmax_peak_ratio=>L"t_{\text{wnt11}} / t_{\text{WT}}",:xmax_mse => L"X_{\text{max}}^{MSE}",:alpha_mse=>L"\alpha_{\text{max}}^{MSE}",:cp_lprod_t0=>L"\text{Peak time L production - wnt11}",:wt_lprod_t0=>L"\text{Peak time L production - WT}")
+
+transformations = Dict(:wt_t0 => t -> t / 60,:cp_t0 => t -> t / 60,:wt_xMax => t -> t ,:cp_xMax => t -> t ,:lm_xMax => t -> t ,:wt_d0 => t -> t ,:cp_d0 => t -> t ,:lm_d0 => t -> t ,:xmax_peak_ratio => t -> t ,:xmax_mse => t -> t,:alpha_mse=> t -> t,:wt_lprod_t0=>t->t / 60,:cp_lprod_t0=>t->t/60);
+
+p_names = [:DN0,:DL0,:kN0,:kL0,:kE,:kNL,:σN0,:σL0,:Na,:NL,:NE,:LN,:s0]
+p_names_id = Dict(:DN0=>1,:DL0=>2,:kN0=>3,:kL0=>4,:kE=>5,:kNL=>6,:σN0=>7,:σL0=>8,:Na=>9,:NL=>10,:NE=>11,:LN=>12,:s0=>13)
+
+p_names_latex = Dict(:DN0 => L"D_N^0",:DL0 =>L"D_L^0",:kN0=>L"K_N^0",:kL0=>L"K_L^0",:kE => L"k_E",:kNL => L"k_{NL}",:σN0 => L"\sigma_{N}^{0}",:σL0 => L"\sigma_{L}^{0}",:Na => L"N_a",:NL => L"N_L",:NE => L"N_E",:LN => L"L_N",:s0 => L"s_0");
+p_names_string = Dict(:DN0 => "D_N0",:DL0 => "D_L0",:kN0=>"K_N0",:kL0 =>"K_L0",:kE => "k_E",:kNL => "k_NL",:σN0 => "σN0",:σL0 => "σL0",:Na => "N_a",:NL => "N_L",:NE => "N_E",:LN => "L_N",:s0 => "s_0");

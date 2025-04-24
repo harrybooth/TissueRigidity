@@ -285,3 +285,14 @@ function generate_param_set(lb,ub,N)
 
     return [collect(p) for p in eachrow(all_p)]
 end
+
+function optimize_params(prob,cp,pv_orig,lb,ub,max_iter)
+
+    optf = Optimization.OptimizationFunction((x, p) -> loss_safe(x,prob,data,alpha_data,cp))
+        
+    optprob = Optimization.OptimizationProblem(optf,pv_orig,lb = lb, ub = ub);
+
+    result_opt = Optimization.solve(optprob,NOMADOpt(),maxiters = max_iter);
+
+    return result_opt.u,result_opt.objective
+end

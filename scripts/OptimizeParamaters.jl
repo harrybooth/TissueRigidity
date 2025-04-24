@@ -80,18 +80,33 @@ for exp_name in all_experiments
     lb[3:end] = (1 - γ) .* lb[3:end]
     ub[3:end] = (1 + γ) .* ub[3:end];
 
-    p_set = generate_param_set(lb,ub,N_sim);
+    lb_pow = copy(pv_orig)
+    ub_pow = copy(pv_orig)
 
-    sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data),p_set)
+    lb_pow[1:2] = 0.9 .* lb_pow[1:2]
+    ub_pow[1:2] = 1.1 .* ub_pow[1:2]
+
+    lb_pow[3:end] = 10^(-j) .* lb_pow[3:end]
+    ub_pow[3:end] = 10^(j) .* ub_pow[3:end];
+
+    cp_list = [0.05,0.1,0.2,0.3]
+
+    max_iter = 1000
+
+    results = pmap(cp->optimize_params(prob,cp,pv_orig,lb,ub,max_iter),cp_list)
+    results_pow = pmap(cp->optimize_params(prob,cp,pv_orig,lb_pow,ub_pow,max_iter),cp_list)
 
     summaryd = Dict{String, Any}()
 
-    summaryd["Parameters"] = p_set
-    summaryd["Results"] =  sim 
+    summaryd["cplist"] = cp_list 
+    summaryd["OptimalParam"] = first.(results)
+    summaryd["OptimalParam_obj"] = last.(results)
+    summaryd["OptimalParam_pow"] = first.(results_pow)
+    summaryd["OptimalParam_pow_obj"] = last.(results_pow)
 
     @tag!(summaryd)
 
-    safesave(datadirx("exp_raw",exp_name * "_Sweep.jld2"), summaryd)
+    safesave(datadirx("exp_raw",exp_name * "_OptParmas.jld2"), summaryd)
 
     ########################################
 

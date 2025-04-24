@@ -35,7 +35,7 @@ end
     using Distributions
     using XLSX
     using DataFrames
-    # using Optimization, OptimizationPolyalgorithms, SciMLSensitivity,OptimizationOptimJL,OptimizationBBO,OptimizationNOMAD
+    using Optimization,OptimizationNOMAD
 end
 
 @everywhere projectdirx(args...) = joinpath($projectdir_static, args...)

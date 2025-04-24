@@ -55,7 +55,7 @@ const s0 = 5.
 
 N_sim = 100000
 
-γ = 0.8
+γ = 0.9
 j = 2.
 
 pv_orig = [DN0,DL0,kN0,kL0,kE,kNL,σN0,σL0,Na,NL,NE,LN,s0]

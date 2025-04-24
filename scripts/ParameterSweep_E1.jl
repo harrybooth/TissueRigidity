@@ -82,18 +82,21 @@ for exp_name in all_experiments
 
     p_set = generate_param_set(lb,ub,N_sim);
 
-    cp = 0.1
+    cp_set = [0.05,0.1,0.2]
 
-    sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data,cp),p_set)
+    # sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data,cp),p_set)
+
+    sim = pmap(pv->get_summary_metrics_cpset_safe(pv,prob,data,alpha_data,cp_set),p_set)
 
     summaryd = Dict{String, Any}()
 
     summaryd["Parameters"] = p_set
+    summaryd["cp_set"] = cp_set
     summaryd["Results"] =  sim 
 
     @tag!(summaryd)
 
-    safesave(datadirx("exp_raw",exp_name * "_Sweep.jld2"), summaryd)
+    safesave(datadirx("exp_raw",exp_name * "CPSet_Sweep.jld2"), summaryd)
 
     ########################################
 

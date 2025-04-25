@@ -24,6 +24,19 @@ function get_params(p_orig::NamedTuple)
     p_orig,p_cp,p_lm
 end 
 
+function get_params_v1(p_vector::Vector{Float64})
+
+    p = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_cp =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = 1e8,mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_lm =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = 0.,σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_ro = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = 0.,σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p,p_cp,p_lm,p_ro
+end 
+
 function check_inbounds(pv,lb,ub)
 
     ib = all(pv.>=lb) & all(pv .<= ub)
@@ -55,6 +68,18 @@ function mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_profile_wt,xmax_profile
     return error,error_cp
 end
 
+function mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_profile_wt,xmax_profile_cp)
+
+    level_x_wt_mse = get_level_x(sol,c_level,exp_times_times_norm .* wt_t0) 
+    level_x_cp_mse = get_level_x(sol_cp,c_level,exp_times_times_norm .* wt_t0)
+
+    max_level_wt = maximum(level_x_wt_mse)
+
+    error = mean(((xmax_profile_wt ./  max_exp_wt) .-  (level_x_wt_mse ./ max_level_wt)).^2)
+    error_cp = mean(((xmax_profile_cp ./ max_exp_wt) .-  (level_x_cp_mse ./ max_level_wt)).^2)
+
+    return error,error_cp
+end
 
 function mse_alpha_profile(sol,t_grid_alpha,alpha_profiles)
 
@@ -113,7 +138,7 @@ function get_summary_metrics(p_vector,prob,xmax_data,alpha_data,cp)
 
     xmax_peak_ratio = cp_t0 / wt_t0 
 
-    xmax_mse = mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+    xmax_mse = mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
 
     t_grid_alpha = alpha_data_times_norm .* wt_t0;
 
@@ -272,7 +297,7 @@ function loss(p_vector,prob,xmax_data,alpha_data,cp)
 
     wt_t0 = t_grid[argmax(level_x_wt)];
 
-    xmax_mse = mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+    xmax_mse = mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
 
     t_grid_alpha = alpha_data_times_norm .* wt_t0;
 

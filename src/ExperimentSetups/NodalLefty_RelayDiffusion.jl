@@ -26,7 +26,6 @@ const c0  = s0_a/(kN0*λ*(1-exp(-L/λ)))
 const N0 = 0.95*c0
 const σ_crit = kN0*N0
 
-
 const σN0 = 1.5*σ_crit
 const Na = N0
 const Nrelay = (σN0/kN0) + c0

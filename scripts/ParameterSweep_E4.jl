@@ -76,8 +76,8 @@ for exp_name in all_experiments
     lb = copy(pv_orig)
     ub = copy(pv_orig)
 
-    lb = 0.1 .* lb
-    ub = 10 .* ub
+    lb = 0.5 .* lb
+    ub = 1.5 .* ub
 
     var_id = [3,4,5,6,8,10,11,12]
 
@@ -89,7 +89,7 @@ for exp_name in all_experiments
 
     # sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data,cp),p_set)
 
-    sim = pmap(pv->get_summary_metrics_cpset_safe(pv,prob,data,alpha_data,cp_set),p_set)
+    sim = pmap(pv->get_summary_metrics_cpset(pv,prob,data,alpha_data,cp_set),p_set)
 
     summaryd = Dict{String, Any}()
 

@@ -4,6 +4,10 @@ const N_samp = 5000
 const t_grid_N = 100
 const t_plot_N = 1000
 
+function trapezoid_rule(f_sampled,dx)
+    (dx/2)*sum(f_sampled[1:end-1] .+ f_sampled[2:end])
+end
+
 function get_params(p_vector::Vector{Float64})
 
     p = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])

@@ -49,7 +49,6 @@ end
 
 @everywhere include(srcdirx("NodalLefty_E.jl"))
 @everywhere include(srcdirx("FittingFunctions.jl"))
-@everywhere include(srcdirx("Plotting&Utility.jl"))
 
 all_experiments = ["NodalLefty_RelayDiffusion"]
 

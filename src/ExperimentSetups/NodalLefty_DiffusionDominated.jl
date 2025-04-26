@@ -42,7 +42,7 @@ const default_mNL = mNL
 
 #########
 
-N_sim = 10.
+N_sim = 10
 
 γ = 0.8
 j = 2.

@@ -89,7 +89,7 @@ for exp_name in all_experiments
 
     # sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data,cp),p_set)
 
-    sim = pmap(pv->get_summary_metrics_cpset(pv,prob,data,alpha_data,cp_set),p_set)
+    sim = pmap(pv->get_summary_metrics_cpset_safe(pv,prob,data,alpha_data,cp_set),p_set)
 
     summaryd = Dict{String, Any}()
 

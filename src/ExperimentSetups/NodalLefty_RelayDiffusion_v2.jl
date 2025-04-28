@@ -34,8 +34,8 @@ const NL = 122.79
 const kL0 = 1.25e-07
 const σL0 = 2.5e-6
 const LN = 2.
-const kNL = 500000
-const kE =  2e-4
+const kNL = 10*500000
+const kE =  8*2e-4
 const NE = 24.05
 
 

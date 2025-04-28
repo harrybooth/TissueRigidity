@@ -70,6 +70,142 @@ function calculate_entropy(ptest,n_bin,lb,ub)
     entropy(prob,n_bin)
 end
 
+function plot_summary!(fig,pv,prob)
+
+    p_tuple,p_cp_tuple,p_lm_tuple = get_params(pv)
+
+    ax = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Position of 20% max } c_N \text{ } (μm) ",ygridvisible = false,xgridvisible = false,title = "w/ cmax 0.2")
+    ax_por = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Average porosity, } \phi", yaxisposition = :right,ylabelcolor = :red,yticklabelcolor = :red,ygridvisible = false,xgridvisible = false,xticksvisible = false)
+
+    (t_grid_alpha,dyn_alpha),(t_plot,(level_x_wt_rescaled,level_x_cp_rescaled,level_x_lm_rescaled )),(porosity_dyn,porosity_dyn_cp),c_level,(sol,sol_cp,sol_lm) = get_alpha_xmax_lambda(pv,prob,0.2);
+
+    hidexdecorations!(ax_por)
+
+    lines!(ax,t_plot,level_x_wt_rescaled,color = :black,label = L"\text{WT}")
+    lines!(ax,t_plot,level_x_cp_rescaled,color = :orange,label = L"\text{Wnt11}")
+    lines!(ax,t_plot,level_x_lm_rescaled,color = :pink,label = L"\text{Lefty mutant}")
+
+    lines!(ax_por,t_plot,porosity_dyn ,linestyle = :dash,color = :black,label = L"\text{ϕ}")
+    lines!(ax_por,t_plot,porosity_dyn_cp ,linestyle = :dash,color = :orange,label = L"\text{ϕ}")
+
+    axislegend(ax,position = :lt)
+
+    ylims!(ax_por,0.,0.14)
+
+    ax.xticks = (0:0.5:3.5,string.(0:0.5:3.5))
+
+    orig_metrics = get_summary_metrics(pv,prob,data,alpha_data,0.2)
+
+    t_plot_int = LinRange(0,3*orig_metrics[:wt_t0],1000)
+
+    νN_int_cp,νN_int = get_integrated_lefty_prod_values(sol,sol_cp,t_plot_int)
+
+    ax = Axis(fig[1,2], xlabel = L"\text{t, mins}", ylabel= L"\int_0^L ν_L(N(t,x)) dx" )
+
+    lines!(ax,t_plot_int./ 60,νN_int_cp,linestyle = :dash,color = :grey, label = L"\text{Wnt11}")
+    lines!(ax,t_plot_int./ 60,νN_int,color = :grey, label = L"\text{WT}")
+    
+    axislegend(ax,position = :rt)
+
+    ax = Axis(fig[1,3], xlabel = L"\text{Position}", ylabel= L"α(t)", title = "Beta = " * string(β) )
+
+    for (n,d) in enumerate(dyn_alpha)
+        lines!(ax,alpha_x,d, label = string(alpha_data_times_norm[n])* "* t_wt")
+        scatter!(ax,alpha_x,alpha_data[:,n+1])
+    end
+
+    axislegend(ax,position = :rb)
+
+    t_check = alpha_data_times_norm[2:end] .* orig_metrics[:wt_t0]
+
+    sol_profiles = solve(prob, p = p_tuple, FBDF(),abstol = 1e-10,reltol = 1e-8, maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
+    sol_profiles_cp = solve(prob, p = p_cp_tuple, FBDF(),abstol = 1e-10,reltol = 1e-8, maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
+
+    dyn_N = [sol[:,1] for sol in sol_profiles.u[1:length(t_check)]]
+    dyn_L = [sol[:,2] for sol in sol_profiles.u[1:length(t_check)]];
+
+    dyn_N_cp = [sol[:,1] for sol in sol_profiles_cp.u[1:length(t_check)]];
+    dyn_L_cp = [sol[:,2] for sol in sol_profiles_cp.u[1:length(t_check)]];
+
+    ax1 = Axis(fig[2,1], xlabel = L"\text{Position}", ylabel= L"\text{Nodal Concentration}", title = "WT")
+
+    for (i,N) in enumerate(dyn_N)
+        lines!(ax1,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+    end
+
+    axislegend(ax1,position = :rt)
+
+    ax2 = Axis(fig[2,2], xlabel = L"\text{Position}", ylabel= L"\text{Nodal Concentration}", title = "Wnt11")
+
+    for (i,N) in enumerate(dyn_N_cp[2:end])
+        lines!(ax2,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+    end
+
+    axislegend(ax2,position = :rt)
+
+    ax3 = Axis(fig[2,3], xlabel = L"\text{Position}", ylabel= L"\text{Lefty Concentration}", title = "WT")
+
+    for (i,N) in enumerate(dyn_L)
+        lines!(ax3,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+    end
+
+    axislegend(ax3,position = :rt)
+
+    ax4 = Axis(fig[3,1], xlabel = L"\text{Position}", ylabel= L"\text{Lefty Concentration}", title = "Wnt11")
+
+    for (i,N) in enumerate(dyn_L_cp)
+        lines!(ax4,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+    end
+
+    axislegend(ax4,position = :rt)
+
+    axt1 = Axis(fig[3,2])
+    axt2 = Axis(fig[3,3])
+
+    hidedecorations!(axt1)
+    hidedecorations!(axt2)
+
+    text_pos = [Point(-0.5,i) for i in LinRange(-1,1,6)]
+
+    for (n,p) in enumerate(p_names[1:6])
+
+        if p_tuple[p] != p_orig[p]
+            col = :red
+        else
+            col = :black
+        end
+
+        if p == :s0
+            text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(2*p_tuple[p]),color = col)
+        else
+            text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(p_tuple[p]),color = col)
+        end
+    end
+
+    ylims!(axt1,-1.2,1.2)
+    ylims!(axt2,-1.2,1.2)
+    xlims!(axt1,-1.5,1.5)
+    xlims!(axt2,-1.5,1.5)
+
+    text_pos = [Point(-0.5,i) for i in LinRange(-1,1,7)]
+
+    for (n,p) in enumerate(p_names[7:end])
+
+        if p_tuple[p] != p_orig[p]
+            col = :red
+        else
+            col = :black
+        end
+
+        if p == :s0
+            text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(2*p_tuple[p]),color = col)
+        else
+            text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(p_tuple[p]),color = col)
+        end
+    end
+
+    fig
+end
 
 metric_names = [:wt_t0,:cp_t0,:wt_xMax,:cp_xMax,:lm_xMax,:wt_d0,:cp_d0,:lm_d0,:xmax_peak_ratio,:xmax_mse,:alpha_mse,:cp_lprod_t0,:wt_lprod_t0,:retcodes]
 metric_names_string = Dict(:wt_t0 => "wt_t0",:cp_t0=>"cp_t0",:wt_xMax=>"wt_xMax",:cp_xMax=>"cp_xMax",:lm_xMax=>"lm_xMax",:wt_d0=>"wt_d0",:cp_d0=>"cp_d0",:lm_d0=>"lm_d0",:xmax_peak_ratio=>"xmax_peak_ratio",:xmax_mse=>"xmax_mse",:alpha_mse=>"alpha_mse",:cp_lprod_t0=>"cp_lprod_t0",:wt_lprod_t0=>"wt_lprod_t0")

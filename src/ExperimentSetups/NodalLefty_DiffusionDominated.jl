@@ -15,6 +15,7 @@ const mNL = 2
 const LN = 15.8114
 const s0 = 5. # s0 / 2 as diana scales by dx/2?
 
+
 ############
 
 const Nc = 300
@@ -28,6 +29,7 @@ const ϕ_min = 0.001;
 
 const α_min = 0.7
 const α0 = 0.881586152184903
+# const α0 = 0.89
 const ϕ0 = ϕ(α0)
 # const β = 1.
 const β = 0.1
@@ -41,6 +43,9 @@ const default_mL = mL
 const default_mNL = mNL
 
 #########
+
+const λ = sqrt(DN0/kN0)
+const c0  = s0/(kN0*λ*(1-exp(-L/λ)))
 
 N_sim = 100000
 

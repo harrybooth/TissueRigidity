@@ -328,7 +328,7 @@ function get_alpha_xmax_lambda(p_vector,prob,cp)
 
 end
 
-function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false)
+function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
 
     p,p_cp,p_lm = get_params(p_vector)
 
@@ -352,7 +352,11 @@ function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false)
     if norm 
         xmax_mse = mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
     else
-        xmax_mse = mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+        if half
+            xmax_mse = mse_xmax_profiles_halfcp(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+        else
+            xmax_mse = mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+        end
     end
 
     t_grid_alpha = alpha_data_times_norm .* wt_t0;
@@ -448,9 +452,9 @@ function metric_loss_safe(p_vector,prob,data_metrics,alpha_data,cp)
     end
 end
 
-function loss_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false)
+function loss_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, half = false)
     try 
-        loss(p_vector,prob,xmax_data,alpha_data,cp,norm)
+        loss(p_vector,prob,xmax_data,alpha_data,cp,norm,half)
     catch
         1e8
     end
@@ -502,9 +506,21 @@ function generate_param_set(lb,ub,var_id,pv_orig,order_restr,N)
 end
 
 
-function optimize_params(prob,cp,pv_orig,lb,ub,max_iter,norm = false)
+function optimize_params(prob,cp,pv_orig,lb,ub,max_iter,norm = false, half = false)
 
-    optf = Optimization.OptimizationFunction((x, p) -> loss_safe(x,prob,data,alpha_data,cp,norm))
+    optf = Optimization.OptimizationFunction((x, p) -> loss_safe(x,prob,data,alpha_data,cp,norm,half))
+        
+    optprob = Optimization.OptimizationProblem(optf,pv_orig,lb = lb, ub = ub);
+
+    result_opt = Optimization.solve(optprob,NOMADOpt(),maxiters = max_iter);
+
+    return result_opt.u,result_opt.objective
+end
+
+
+function optimize_params_opt_clevel(prob,pv_orig,lb,ub,max_iter,norm = false, half = false)
+
+    optf = Optimization.OptimizationFunction((x, p) -> loss_safe(x[1:end-1],prob,data,alpha_data,x[end],norm,half))
         
     optprob = Optimization.OptimizationProblem(optf,pv_orig,lb = lb, ub = ub);
 

@@ -249,6 +249,48 @@ function get_summary_metrics_safe(p_vector,prob,xmax_data,alpha_data)
     end
 end
     
+function get_params_v1(p_vector::Vector{Float64})
+
+    p = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_cp =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = 1e8,mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_lm =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = 0.,σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_ro = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = 0.,σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_ro_cp = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = 0.,σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = 1e8,mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_ro_cp_lm = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = 0.,σN0 = 0.,σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = 1e8,mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p,p_cp,p_lm,p_ro, p_ro_cp,p_ro_cp_lm
+end 
+
+function get_integrated_lefty_prod(sol,sol_cp,t_grid)
+    cNt_cp = [sol_cp(t)[:,1] for t in t_grid]
+    αt_cp = [sol_cp(t)[:,4] for t in t_grid]
+
+    cNt = [sol(t)[:,1] for t in t_grid]
+    αt = [sol(t)[:,4] for t in t_grid]
+
+    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt_cp,αt_cp)];
+    νN_int = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt,αt)];
+
+    return (t_grid[argmax(νN_int_cp)] ,t_grid[argmax(νN_int)])
+end
+
+function get_integrated_lefty_prod_values(sol,sol_cp,t_grid)
+    cNt_cp = [sol_cp(t)[:,1] for t in t_grid]
+    αt_cp = [sol_cp(t)[:,4] for t in t_grid]
+
+    cNt = [sol(t)[:,1] for t in t_grid]
+    αt = [sol(t)[:,4] for t in t_grid]
+
+    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt_cp,αt_cp)];
+    νN_int = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt,αt)];
+
+    return νN_int_cp,νN_int
+end
 
 function get_alpha_xmax(p_vector,prob)
 

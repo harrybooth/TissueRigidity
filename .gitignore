@@ -6,7 +6,8 @@
 /data
 /videos
 /plots
-/notebooks
+/notebooks/old_latest
+/notebooks/old
 /_research
 
 ################################################################################

@@ -120,8 +120,10 @@ function plot_summary!(fig,pv,prob)
 
         t_check = alpha_data_times_norm[2:end] .* orig_metrics[:wt_t0]
 
-        sol_profiles = solve(prob, p = p_tuple, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
-        sol_profiles_cp = solve(prob, p = p_cp_tuple, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
+        prob_finite = remake(prob,tspan = (0,alpha_data_times_norm[end] * orig_metrics[:wt_t0]))
+
+        sol_profiles = solve(prob_finite, p = p_tuple, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
+        sol_profiles_cp = solve(prob_finite, p = p_cp_tuple, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
 
         dyn_N = [sol[:,1] for sol in sol_profiles.u[1:length(t_check)]]
         dyn_L = [sol[:,2] for sol in sol_profiles.u[1:length(t_check)]];

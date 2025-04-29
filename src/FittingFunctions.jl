@@ -366,6 +366,44 @@ function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
     return mean(xmax_mse) + alpha_mse
 end
 
+function loss_no_alpha(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
+
+    p,p_cp,p_lm = get_params(p_vector)
+
+    sol = solve(prob, p = p, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+    sol_cp = solve(prob, p = p_cp, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+
+    λ_trange = LinRange(0.,sol.t[end],N_samp)
+    
+    λhalf,λhalf_max_t = get_lambda_half(sol,λ_trange)
+    
+    c_max_wt = maximum(sol(λhalf_max_t)[:,1])
+
+    c_level = cp*c_max_wt
+
+    t_grid = LinRange(0,sol.t[end],t_grid_N)
+
+    level_x_wt = get_level_x(sol,c_level,t_grid);
+
+    wt_t0 = t_grid[argmax(level_x_wt)];
+
+    if norm 
+        xmax_mse = mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+    else
+        if half
+            xmax_mse = mse_xmax_profiles_halfcp(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+        else
+            xmax_mse = mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
+        end
+    end
+
+    t_grid_alpha = alpha_data_times_norm .* wt_t0;
+
+    alpha_mse = mse_alpha_profile(sol,t_grid_alpha,[c for c in eachcol(alpha_data[:,2:end])])
+
+    return mean(xmax_mse)
+end
+
 function loss_diffdom(p_vector,prob,xmax_data,alpha_data,cp,norm = false)
 
     p,p_cp,p_lm = get_params_diffdom(p_vector)
@@ -455,6 +493,14 @@ end
 function loss_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, half = false)
     try 
         loss(p_vector,prob,xmax_data,alpha_data,cp,norm,half)
+    catch
+        1e8
+    end
+end
+
+function loss_no_alpha_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, half = false)
+    try 
+        loss_no_alpha(p_vector,prob,xmax_data,alpha_data,cp,norm,half)
     catch
         1e8
     end

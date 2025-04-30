@@ -79,7 +79,7 @@ for exp_name in all_experiments
     lb = 0.5 .* lb
     ub = 1.5 .* ub
 
-    var_id = [3,4,5,6,7,8,9,10,11,12]
+    var_id = [3,4,5,6,8,9,10,11,12]
 
     order_restr = [(11,10)]
     
@@ -99,7 +99,7 @@ for exp_name in all_experiments
 
     @tag!(summaryd)
 
-    safesave(datadirx("exp_raw",exp_name * "_CPSet_Sweep_RestrID.jld2"), summaryd)
+    safesave(datadirx("exp_raw",exp_name * "_CPSet_Sweep_RestrID_nosig.jld2"), summaryd)
 
     ########################################
 

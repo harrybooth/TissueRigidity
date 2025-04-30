@@ -187,9 +187,9 @@ function plot_summary!(fig,pv,prob)
             end
 
             if p == :s0
-                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(2*p_tuple[p]),color = col)
+                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 6)),color = col)
             else
-                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(p_tuple[p]),color = col)
+                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 6)),color = col)
             end
         end
 
@@ -209,9 +209,9 @@ function plot_summary!(fig,pv,prob)
             end
 
             if p == :s0
-                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(2*p_tuple[p]),color = col)
+                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 6)),color = col)
             else
-                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(p_tuple[p]),color = col)
+                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 6)),color = col)
             end
         end
 

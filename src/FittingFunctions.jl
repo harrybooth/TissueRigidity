@@ -428,9 +428,10 @@ function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,[c for c in eachcol(alpha_data[:,2:end])])
 
-    # return mean(xmax_mse) + alpha_mse
+    mean_xmax_mse = mean(xmax_mse)
 
     return alpha_mse
+
 end
 
 function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
@@ -468,7 +469,13 @@ function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = fa
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,[c for c in eachcol(alpha_data[:,2:end])])
 
+    dynN =  sol(alpha_data_times_norm[end] * wt_t0)[:,1]
+
+    inc_met = sum([x < 0 ? 0. : x for x in dynN[2:end] .- dynN[1:end-1]])
+
     return mean(xmax_mse), alpha_mse
+
+    # return alpha_mse, inc_met
 end
 
 
@@ -647,6 +654,15 @@ function loss_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, half = fa
         1e8
     end
 end
+
+function loss_tuple_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, half = false)
+    try 
+        loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm,half)
+    catch
+        (1e8,1e8)
+    end
+end
+
 
 function loss_no_alpha_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, half = false)
     try 

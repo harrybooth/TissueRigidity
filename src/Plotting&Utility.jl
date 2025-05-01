@@ -102,10 +102,12 @@ function plot_summary!(fig,pv,prob)
 
         νN_int_cp,νN_int = get_integrated_lefty_prod_values(sol,sol_cp,t_plot_int)
 
-        ax = Axis(fig[1,2], xlabel = L"\text{t, mins}", ylabel= L"\int_0^L ν_L(N(t,x)) dx" )
+        # nodal_prod_cp,nodal_prod = get_integrated_nodal_prod_values(sol,sol_cp,t_plot_int)
 
-        lines!(ax,t_plot_int./ 60,νN_int_cp,linestyle = :dash,color = :grey, label = L"\text{Wnt11}")
-        lines!(ax,t_plot_int./ 60,νN_int,color = :grey, label = L"\text{WT}")
+        ax = Axis(fig[1,2], xlabel = L"\text{Rescaled time} t^{'}", ylabel= L"\int_0^L ν_L(N(t,x)) dx" )
+
+        lines!(ax,LinRange(0,3,1000),νN_int_cp,linestyle = :dash,color = :grey, label = L"\text{Wnt11}")
+        lines!(ax,LinRange(0,3,1000),νN_int,color = :grey, label = L"\text{WT}")
         
         axislegend(ax,position = :rt)
 

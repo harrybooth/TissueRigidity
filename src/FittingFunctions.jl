@@ -332,6 +332,19 @@ function get_integrated_lefty_prod_values(sol,sol_cp,t_grid)
     return νN_int_cp,νN_int
 end
 
+function get_integrated_nodal_prod_values(sol,sol_cp,t_grid)
+    cNt_cp = [sol_cp(t)[:,1] for t in t_grid]
+    αt_cp = [sol_cp(t)[:,4] for t in t_grid]
+
+    cNt = [sol(t)[:,1] for t in t_grid]
+    αt = [sol(t)[:,4] for t in t_grid]
+
+    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(σN0,ϕ0,ϕ.(α)),Na,mN),1) for (cN,α) in zip(cNt_cp,αt_cp)];
+    νN_int = [trapezoid_rule(ν.(cN,σ.(σN0,ϕ0,ϕ.(α)),Na,mN),1) for (cN,α) in zip(cNt,αt)];
+
+    return νN_int_cp,νN_int
+end
+
 function get_summary_metrics_safe(p_vector,prob,xmax_data,alpha_data,cp)
 
     p,p_cp,p_lm = get_params(p_vector)
@@ -473,7 +486,7 @@ function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = fa
 
     inc_met = sum([x < 0 ? 0. : x for x in dynN[2:end] .- dynN[1:end-1]])
 
-    return mean(xmax_mse), alpha_mse
+    return inc_met, alpha_mse
 
     # return alpha_mse, inc_met
 end

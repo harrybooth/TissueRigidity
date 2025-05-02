@@ -182,7 +182,9 @@ function get_summary_metrics(p_vector,prob,xmax_data,alpha_data,cp)
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,eachcol(alpha_data[:,2:end]))
 
-    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_grid)
+    t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
+
+    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
 
     return (wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,xmax_mse_half = xmax_mse_half,alpha_mse = alpha_mse,cp_lprod_t0 = cp_lprod_t0,wt_lprod_t0 = wt_lprod_t0,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode))
 end
@@ -292,7 +294,9 @@ function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
 
         alpha_mse = mse_alpha_profile(sol,t_grid_alpha,eachcol(alpha_data[:,2:end]))
 
-        cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_grid)
+        t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
+
+        cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
 
         ############
 
@@ -468,6 +472,12 @@ function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = fa
 
     wt_t0 = t_grid[argmax(level_x_wt)];
 
+    t_grid_alpha = alpha_data_times_norm .* wt_t0;
+
+    t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
+
+    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
+
     if norm 
         xmax_mse = mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])
     else
@@ -486,7 +496,7 @@ function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = fa
 
     inc_met = sum([x < 0 ? 0. : x for x in dynN[2:end] .- dynN[1:end-1]])
 
-    return inc_met, alpha_mse
+    return inc_met, alpha_mse, Float64(1 -  (cp_lprod_t0 > 1.2* wt_lprod_t0)) , mean(xmax_mse)
 
     # return alpha_mse, inc_met
 end
@@ -647,7 +657,9 @@ function metric_loss(p_vector,prob,data_metrics,alpha_data,cp)
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,eachcol(alpha_data[:,2:end]))
 
-    # cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_grid)
+    # t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
+
+    # cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
 
     return (wt_d0)^2 + (xmax_peak_ratio - data_metrics[:xmax_peak_ratio])^2 
 end
@@ -672,7 +684,7 @@ function loss_tuple_safe(p_vector,prob,xmax_data,alpha_data,cp,norm = false, hal
     try 
         loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm,half)
     catch
-        (1e8,1e8)
+        (1e8,1e8,1e8,1e8)
     end
 end
 

@@ -371,6 +371,48 @@ function get_summary_metrics_cpset_safe(p_vector,prob,xmax_data,alpha_data,cp_se
     end
 end
 
+function get_alpha_xmax(p_vector,prob,cp)
+
+    p,p_cp,p_lm = get_params(p_vector)
+
+    sol = solve(prob, p = p, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+    sol_cp = solve(prob, p = p_cp, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+    sol_lm = solve(prob, p = p_lm, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+
+    max_t = max(sol.t[end],sol_cp.t[end])
+
+    t_grid = LinRange(0,max_t,N_samp)
+
+    c_max_cp = maximum(reduce(vcat,[sol_cp(t)[:,1] for t in t_grid ]))
+    c_max_wt = maximum(reduce(vcat,[sol(t)[:,1] for t in t_grid]))
+
+    # c_level = 0.2*min(c_max_cp,c_max_wt)
+    c_level = cp*c_max_wt
+
+    level_x_wt = get_level_x(sol,c_level,t_grid);
+    level_x_cp = get_level_x(sol_cp,c_level,t_grid)
+
+    wt_t0 = t_grid[argmax(level_x_wt)];
+    cp_t0 = t_grid[argmax(level_x_cp)];
+
+    t_plot = LinRange(0,exp_times_times_norm[end],1000)
+
+    level_x_wt_rescaled = get_level_x(sol,c_level,t_plot .* wt_t0)  
+    level_x_cp_rescaled = get_level_x(sol_cp,c_level,t_plot .* wt_t0)
+    level_x_lm_rescaled  = get_level_x(sol_lm,c_level,t_plot .* wt_t0)
+
+    t_grid_alpha = alpha_data_times_norm .* wt_t0;
+
+    dyn_alpha = [sol(t)[alpha_x,4] for t in t_grid_alpha]
+
+    porosity_dyn = [mean(ϕ.(sol(t)[1:50,4])) for t in t_plot .* wt_t0];
+
+    porosity_dyn_cp =   [mean(ϕ.(sol_cp(t)[1:50,4])) for t in t_plot .* wt_t0];
+
+    return (t_grid_alpha,dyn_alpha),(t_plot,(level_x_wt_rescaled,level_x_cp_rescaled,level_x_lm_rescaled )),(porosity_dyn,porosity_dyn_cp),c_level,(sol,sol_cp,sol_lm)
+
+end
+
 
 function get_alpha_xmax_lambda(p_vector,prob,cp)
 

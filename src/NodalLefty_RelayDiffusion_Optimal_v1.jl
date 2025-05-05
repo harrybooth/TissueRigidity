@@ -27,15 +27,15 @@ const N0 = 0.95*c0
 const σ_crit = kN0*N0
 
 const σN0 = 0.4108
-const Na = 78.1
+const Na = 93.71999999999998
 const Nrelay = (σN0/kN0) + c0
 
 const NL = 148.79000000000002
 const kL0 = 2.55e-7
-const σL0 = 5.2e-6
+const σL0 = 4.68e-6
 const LN = 2.
-const kNL = 9.0e6
-const kE =  0.0016
+const kNL = 4.5e6
+const kE =  0.0032
 const NE = 24.05
 
 

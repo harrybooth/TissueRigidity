@@ -134,14 +134,12 @@ function plot_summary!(fig,pv,prob)
         dyn_N_cp = [sol[:,1] for sol in sol_profiles_cp.u[1:length(t_check)]];
         dyn_L_cp = [sol[:,2] for sol in sol_profiles_cp.u[1:length(t_check)]];
         dyn_α_cp = [sol[:,4] for sol in sol_profiles_cp.u[1:length(t_check)]];
-
     
-        lefty_prod_profiles_cp = [ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL) for (cN,α) in zip(dyn_N_cp,dyn_α_cp)];
-        lefty_prod_profiles = [ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL) for (cN,α) in zip(dyn_N,dyn_α)];
+        lefty_prod_profiles_cp = [ν.(cN,σ.(p_cp_tuple[:σL0],ϕ0,ϕ.(α)),p_cp_tuple[:NL],p_cp_tuple[:mL]) for (cN,α) in zip(dyn_N_cp,dyn_α_cp)];
+        lefty_prod_profiles = [ν.(cN,σ.(p_tuple[:σL0],ϕ0,ϕ.(α)),p_tuple[:NL],p_tuple[:mL]) for (cN,α) in zip(dyn_N,dyn_α)];
 
-        nodal_prod_profiles_cp = [ν.(cN,σ.(σN0,ϕ0,ϕ.(α)),Na,mN) for (cN,α) in zip(dyn_N_cp,dyn_α_cp)];
-        nodal_prod_profiles = [ν.(cN,σ.(σN0,ϕ0,ϕ.(α)),Na,mN) for (cN,α) in zip(dyn_N,dyn_α)];
-
+        nodal_prod_profiles_cp = [ν.(cN,σ.(p_cp_tuple[:σN0],ϕ0,ϕ.(α)),p_cp_tuple[:Na],p_cp_tuple[:mN]) for (cN,α) in zip(dyn_N_cp,dyn_α_cp)];
+        nodal_prod_profiles = [ν.(cN,σ.(p_tuple[:σN0],ϕ0,ϕ.(α)),p_tuple[:Na],p_tuple[:mN]) for (cN,α) in zip(dyn_N,dyn_α)];
 
         # dyn_N = [sol[:,1] for sol in sol_profiles.u]
         # dyn_L = [sol[:,2] for sol in sol_profiles.u];

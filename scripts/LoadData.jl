@@ -14,7 +14,9 @@ const exp_times_times_norm = exp_times ./ exp_t0_wt;
 alpha_data = XLSX.readxlsx(scriptsdirx() * "/SmadCalibrationData.xlsx")["WT_alpha"] 
 alpha_data = XLSX.eachtablerow(alpha_data) |> DataFrames.DataFrame
 
-const alpha_data_times = [0,30,60,90,120] .* 60
+# const alpha_data_times = [0,30,60,90,120] .* 60
+
+const alpha_data_times = [0,30,60,90,120,150] .* 60
 
 const alpha_positions = Float64.(alpha_data[:,"Position"])
 

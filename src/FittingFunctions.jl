@@ -19,6 +19,19 @@ function get_params(p_vector::Vector{Float64})
     p,p_cp,p_lm
 end 
 
+function get_params_ro(p_vector::Vector{Float64})
+
+    p = (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_cp =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = 1e8,mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_lm =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = 0.,σN0 = p_vector[7],σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p_ro =  (DN0 = p_vector[1],DL0 = p_vector[2],kN0 = p_vector[3],kL0 = p_vector[4],kE = p_vector[5],kNL = p_vector[6],σN0 = 0. ,σL0 = p_vector[8],Na = p_vector[9],NL = p_vector[10],NE = p_vector[11],mN = default_mN,mL = default_mL,mNL = default_mNL,LN = p_vector[12],s0 = p_vector[13])
+
+    p,p_cp,p_lm,p_ro
+end 
+
 function get_params(p_orig::NamedTuple)
 
     p_cp =  (DN0 = p_orig[:DN0],DL0 = p[:DL0],kN0 = p[:kN0],kL0 = p[:kL0],kE = p[:kE],kNL = p[:kNL],σN0 = p[:σN0],σL0 = p[:σL0],Na = p[:Na],NL = p[:NL],NE = 1e8,mN = p[:mN],mL = p[:mL],mNL = p[:mNL],LN = p[:LN],s0 = p[:s0])
@@ -245,15 +258,17 @@ end
 
 function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
 
-    p,p_cp,p_lm = get_params(p_vector)
+    p,p_cp,p_lm,p_ro = get_params_ro(p_vector)
 
     sol = solve(prob, p = p, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
     sol_cp = solve(prob, p = p_cp, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
     sol_lm = solve(prob, p = p_lm, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+    sol_ro = solve(prob, p = p_ro, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
 
     λ_trange = LinRange(0.,sol.t[end],N_samp)
     
     λhalf,λhalf_max_t = get_lambda_half(sol,λ_trange)
+    λhalf_ro,λhalf_max_t_ro = get_lambda_half(sol_ro,λ_trange)
     
     c_max_wt = maximum(sol(λhalf_max_t)[:,1])
 
@@ -304,7 +319,11 @@ function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
 
         inc_met = sum([x < 0 ? 0. : x for x in dynN[2:end] .- dynN[1:end-1]])
 
-        push!(all_results,(wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,xmax_mse_half = xmax_mse_half,alpha_mse = alpha_mse,cp_lprod_t0 = cp_lprod_t0,wt_lprod_t0 = wt_lprod_t0,inc_met = inc_met,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode)))
+        IF = [mean(ϕ.(sol(t)[1:50,4])) for t in t_plot .* wt_t0];
+
+        IF_Δ = (IF[1],IF[end])
+
+        push!(all_results,(wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,xmax_mse_half = xmax_mse_half,alpha_mse = alpha_mse,cp_lprod_t0 = cp_lprod_t0,wt_lprod_t0 = wt_lprod_t0,inc_met = inc_met,λhalf = λhalf,λhalf_ro = λhalf_ro,IF_Δ = IF_Δ,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode)))
     end
 
     return all_results

@@ -50,7 +50,7 @@ end
 @everywhere include(srcdirx("NodalLefty_E.jl"))
 @everywhere include(srcdirx("FittingFunctions.jl"))
 
-all_experiments = ["NodalLefty_RelayDiffusion_Optimal_v1"]
+all_experiments = ["NodalLefty_RelayDiffusion_Optimal_v2"]
 
 @everywhere include(scriptsdirx("LoadData.jl"))
 

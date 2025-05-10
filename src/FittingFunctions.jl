@@ -508,7 +508,7 @@ function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
 
     mean_xmax_mse = mean(xmax_mse)
 
-    return alpha_mse
+    return alpha_mse + mean_xmax_mse
 
 end
 

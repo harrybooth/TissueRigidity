@@ -1,4 +1,5 @@
 using Distributions
+using Optimization
 
 const N_samp = 5000
 const t_grid_N = 100
@@ -256,6 +257,15 @@ end
 #     return all_results
 # end
 
+function get_exp_loss(dynN,loss,loss_opt)
+    prob = OptimizationProblem(loss_opt, [10.,-2.], dynN,lb = [0., -Inf], ub = [Inf, 0.])
+
+    sol = solve(prob, IPNewton())
+
+    return loss(sol.u,dynN),sol.u
+end
+
+
 function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
 
     p,p_cp,p_lm,p_ro = get_params_ro(p_vector)
@@ -317,13 +327,23 @@ function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
 
         dynN =  sol(alpha_data_times_norm[end] * wt_t0)[:,1]
 
-        inc_met = sum([x < 0 ? 0. : x for x in dynN[2:end] .- dynN[1:end-1]])
+        # inc_met = sum([x < 0 ? 0. : x for x in dynN[2:end] .- dynN[1:end-1]])
+
+        # inc_met = maximum([std((dynN[2:end] .- dynN[1:end-1]) ./ dynN[1:end-1]) for dynN in [sol(t * wt_t0)[:,1] for t in alpha_data_times_norm]])
+
+        loss(u,p) = mean(([u[1]*exp(u[2]*x) for x in tissue] .- p) .^ 2)
+
+        loss_opt = OptimizationFunction(loss, Optimization.AutoForwardDiff())
+
+        inc_met_v = [get_exp_loss(dynN,loss,loss_opt) for dynN in [sol(t * wt_t0)[:,1] for t in alpha_data_times_norm]]
+
+        inc_met = maximum(first.(inc_met_v))
 
         IF = [mean(ϕ.(sol(t)[1:50,4])) for t in t_plot .* wt_t0];
 
         IF_Δ = (IF[1],IF[end])
 
-        push!(all_results,(wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,xmax_mse_half = xmax_mse_half,alpha_mse = alpha_mse,cp_lprod_t0 = cp_lprod_t0,wt_lprod_t0 = wt_lprod_t0,inc_met = inc_met,λhalf = λhalf,λhalf_ro = λhalf_ro,IF_Δ = IF_Δ,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode)))
+        push!(all_results,(wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,xmax_mse_half = xmax_mse_half,alpha_mse = alpha_mse,cp_lprod_t0 = cp_lprod_t0,wt_lprod_t0 = wt_lprod_t0,inc_met = (inc_met,inc_met_v[end][2]),λhalf_max_t = λhalf_max_t,λhalf_max_t_ro = λhalf_max_t_ro,IF_Δ = IF_Δ,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode)))
     end
 
     return all_results

@@ -13,7 +13,7 @@ using ClusterManagers
 
 projectdir_static = dirname(Base.active_project())
 
-cluster_calc = true
+cluster_calc = false
 
 if cluster_calc
     n_tasks = parse(Int, ENV["SLURM_NTASKS"])
@@ -89,7 +89,7 @@ for exp_name in all_experiments
 
     # sim = pmap(pv-> get_summary_metrics_safe(pv,prob,data,alpha_data,cp),p_set)
 
-    sim = pmap(pv->get_summary_metrics_cpset_safe(pv,prob,data,alpha_data,cp_set),p_set)
+    sim = pmap(pv->get_summary_metrics_cpset(pv,prob,data,alpha_data,cp_set),p_set)
 
     summaryd = Dict{String, Any}()
 

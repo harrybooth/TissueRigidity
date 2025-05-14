@@ -91,6 +91,15 @@ function get_lambda_half(sol,t_range)
     λhalf_x, t_range[argmax(λhalf_x)]
 end
 
+# function get_lambda_half(sol,t_range)
+#     c0_t = [maximum(sol(t)[:,1]) for t in t_range] .- 1e-10
+
+#     λhalf_id = [findall(sol(t)[:,1] .- 1e-10 .> 0.5*c0) for (t,c0) in zip(t_range,c0_t)]
+#     λhalf_x = [length(id_list) != 0 ? tissue[maximum(id_list)] : 0. for id_list in λhalf_id];
+
+#     λhalf_x, t_range[maximum(findall(x->x==maximum(λhalf_x),λhalf_x))]
+# end
+
 function mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_profile_wt,xmax_profile_cp)
 
     level_x_wt_mse = get_level_x(sol,c_level,exp_times_times_norm .* wt_t0)  
@@ -198,7 +207,7 @@ function get_summary_metrics(p_vector,prob,xmax_data,alpha_data,cp)
 
     t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
 
-    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
+    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int,p,p_cp)
 
     return (wt_t0 = wt_t0,cp_t0 = cp_t0,wt_xMax = wt_xMax,cp_xMax = cp_xMax,lm_xMax = lm_xMax,wt_d0 = wt_d0,cp_d0 = cp_d0,lm_d0 = lm_d0,xmax_peak_ratio = xmax_peak_ratio,xmax_mse = xmax_mse,xmax_mse_half = xmax_mse_half,alpha_mse = alpha_mse,cp_lprod_t0 = cp_lprod_t0,wt_lprod_t0 = wt_lprod_t0,retcodes = (sol.retcode,sol_cp.retcode,sol_lm.retcode))
 end
@@ -321,7 +330,7 @@ function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
 
         t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
 
-        cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
+        cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int,p,p_cp)
 
         ############
 
@@ -349,41 +358,41 @@ function get_summary_metrics_cpset(p_vector,prob,xmax_data,alpha_data,cp_set)
     return all_results
 end
 
-function get_integrated_lefty_prod(sol,sol_cp,t_grid)
+function get_integrated_lefty_prod(sol,sol_cp,t_grid,p_tuple,p_tuple_cp)
     cNt_cp = [sol_cp(t)[:,1] for t in t_grid]
     αt_cp = [sol_cp(t)[:,4] for t in t_grid]
 
     cNt = [sol(t)[:,1] for t in t_grid]
     αt = [sol(t)[:,4] for t in t_grid]
 
-    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt_cp,αt_cp)];
-    νN_int = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt,αt)];
+    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(p_tuple_cp[:σL0],ϕ0,ϕ.(α)),p_tuple_cp[:NL],p_tuple_cp[:mL]),1) for (cN,α) in zip(cNt_cp,αt_cp)];
+    νN_int = [trapezoid_rule(ν.(cN,σ.(p_tuple[:σL0],ϕ0,ϕ.(α)),p_tuple[:NL],p_tuple[:mL]),1) for (cN,α) in zip(cNt,αt)];
 
     return (t_grid[argmax(νN_int_cp)] ,t_grid[argmax(νN_int)])
 end
 
-function get_integrated_lefty_prod_values(sol,sol_cp,t_grid)
+function get_integrated_lefty_prod_values(sol,sol_cp,t_grid,p_tuple,p_tuple_cp)
     cNt_cp = [sol_cp(t)[:,1] for t in t_grid]
     αt_cp = [sol_cp(t)[:,4] for t in t_grid]
 
     cNt = [sol(t)[:,1] for t in t_grid]
     αt = [sol(t)[:,4] for t in t_grid]
 
-    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt_cp,αt_cp)];
-    νN_int = [trapezoid_rule(ν.(cN,σ.(σL0,ϕ0,ϕ.(α)),NL,mL),1) for (cN,α) in zip(cNt,αt)];
+    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(p_tuple_cp[:σL0],ϕ0,ϕ.(α)),p_tuple_cp[:NL],p_tuple_cp[:mL]),1) for (cN,α) in zip(cNt_cp,αt_cp)];
+    νN_int = [trapezoid_rule(ν.(cN,σ.(p_tuple[:σL0],ϕ0,ϕ.(α)),p_tuple[:NL],p_tuple[:mL]),1) for (cN,α) in zip(cNt,αt)];
 
     return νN_int_cp,νN_int
 end
 
-function get_integrated_nodal_prod_values(sol,sol_cp,t_grid)
+function get_integrated_nodal_prod_values(sol,sol_cp,t_grid,p_tuple,p_tuple_cp)
     cNt_cp = [sol_cp(t)[:,1] for t in t_grid]
     αt_cp = [sol_cp(t)[:,4] for t in t_grid]
 
     cNt = [sol(t)[:,1] for t in t_grid]
     αt = [sol(t)[:,4] for t in t_grid]
 
-    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(σN0,ϕ0,ϕ.(α)),Na,mN),1) for (cN,α) in zip(cNt_cp,αt_cp)];
-    νN_int = [trapezoid_rule(ν.(cN,σ.(σN0,ϕ0,ϕ.(α)),Na,mN),1) for (cN,α) in zip(cNt,αt)];
+    νN_int_cp = [trapezoid_rule(ν.(cN,σ.(p_tuple_cp[:σN0],ϕ0,ϕ.(α)),p_tuple_cp[:Na],p_tuple_cp[:mN]),1) for (cN,α) in zip(cNt_cp,αt_cp)];
+    νN_int = [trapezoid_rule(ν.(cN,σ.(p_tuple[:σN0],ϕ0,ϕ.(α)),p_tuple[:Na],p_tuple[:mN]),1) for (cN,α) in zip(cNt,αt)];
 
     return νN_int_cp,νN_int
 end
@@ -557,7 +566,7 @@ function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = fa
 
     t_plot_int = LinRange(0,3*wt_t0,t_plot_N)
 
-    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int)
+    cp_lprod_t0,wt_lprod_t0 = get_integrated_lefty_prod(sol,sol_cp,t_plot_int,p,p_cp)
 
     if norm 
         xmax_mse = mse_xmax_profiles_norm(sol,sol_cp,wt_t0,c_level,xmax_data[:,"WT"],xmax_data[:,"SLB"])

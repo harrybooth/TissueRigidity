@@ -98,9 +98,9 @@ function plot_summary!(fig,pv,prob)
 
         orig_metrics = get_summary_metrics(pv,prob,data,alpha_data,0.2)
 
-        t_plot_int = LinRange(0,3*orig_metrics[:wt_t0],1000)
+        t_plot_int = LinRange(0,3*orig_metrics[:wt_t0],t_plot_N)
 
-        νN_int_cp,νN_int = get_integrated_lefty_prod_values(sol,sol_cp,t_plot_int)
+        νN_int_cp,νN_int = get_integrated_lefty_prod_values(sol,sol_cp,t_plot_int,p_tuple,p_cp_tuple)
 
         # nodal_prod_cp,nodal_prod = get_integrated_nodal_prod_values(sol,sol_cp,t_plot_int)
 
@@ -196,9 +196,9 @@ function plot_summary!(fig,pv,prob)
             end
 
             if p == :s0
-                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 6)),color = col)
+                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 15)),color = col)
             else
-                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 6)),color = col)
+                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 15)),color = col)
             end
         end
 
@@ -218,9 +218,9 @@ function plot_summary!(fig,pv,prob)
             end
 
             if p == :s0
-                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 6)),color = col)
+                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 15)),color = col)
             else
-                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 6)),color = col)
+                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 15)),color = col)
             end
         end
 

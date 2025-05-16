@@ -500,6 +500,44 @@ function get_alpha_xmax_lambda(p_vector,prob,cp)
 
 end
 
+function get_alpha_xmax_lambda_et(p_vector,prob,cp,et)
+
+    p,p_cp,p_lm = get_params(p_vector)
+
+    sol = solve(prob, p = p, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+    sol_cp = solve(prob, p = p_cp, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+    sol_lm = solve(prob, p = p_lm, FBDF(),abstol = de_abstol,reltol = de_reltol,maxiters = 1e6,callback = TerminateSteadyState(1e-6,1e-4),isoutofdomain = (u,p,t) -> any(x->x<0, u));
+
+    λ_trange = LinRange(0.,sol.t[end],N_samp)
+    
+    λhalf,λhalf_max_t = get_lambda_half(sol,λ_trange)
+    
+    c_max_wt = maximum(sol(λhalf_max_t)[:,1])
+
+    c_level = cp*c_max_wt
+
+    level_x_wt = get_level_x(sol,c_level,λ_trange);
+
+    wt_t0 = λ_trange[argmax(level_x_wt)];
+
+    t_plot = LinRange(0,et,t_plot_N)
+
+    level_x_wt_rescaled = get_level_x(sol,c_level,t_plot .* wt_t0)  
+    level_x_cp_rescaled = get_level_x(sol_cp,c_level,t_plot .* wt_t0)
+    level_x_lm_rescaled  = get_level_x(sol_lm,c_level,t_plot .* wt_t0)
+
+    t_grid_alpha = alpha_data_times_norm .* wt_t0;
+
+    dyn_alpha = [sol(t)[alpha_x,4] for t in t_grid_alpha]
+
+    porosity_dyn = [mean(ϕ.(sol(t)[1:50,4])) for t in t_plot .* wt_t0];
+
+    porosity_dyn_cp =   [mean(ϕ.(sol_cp(t)[1:50,4])) for t in t_plot .* wt_t0];
+
+    return (t_grid_alpha,dyn_alpha),(t_plot,(level_x_wt_rescaled,level_x_cp_rescaled,level_x_lm_rescaled )),(porosity_dyn,porosity_dyn_cp),c_level,(sol,sol_cp,sol_lm)
+
+end
+
 function loss(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
 
     p,p_cp,p_lm = get_params(p_vector)
@@ -627,7 +665,10 @@ function loss_no_alpha(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half =
 
     alpha_mse = mse_alpha_profile(sol,t_grid_alpha,[c for c in eachcol(alpha_data[:,2:end])])
 
-    return mean(xmax_mse)
+    mean_xmax_mse = mean(xmax_mse)
+
+    return mean_xmax_mse
+
 end
 
 function loss_diffdom(p_vector,prob,xmax_data,alpha_data,cp,norm = false)
@@ -843,6 +884,19 @@ function optimize_params(prob,cp,pv_orig,lb,ub,max_iter,norm = false, half = fal
 
     return result_opt.u,result_opt.objective
 end
+
+
+function optimize_params_no_alpha(prob,cp,pv_orig,lb,ub,max_iter,norm = false, half = false)
+
+    optf = Optimization.OptimizationFunction((x, p) -> loss_no_alpha_safe(x,prob,data,alpha_data,cp,norm,half))
+        
+    optprob = Optimization.OptimizationProblem(optf,pv_orig,lb = lb, ub = ub);
+
+    result_opt = Optimization.solve(optprob,NOMADOpt(),maxiters = max_iter);
+
+    return result_opt.u,result_opt.objective
+end
+
 
 # function optimize_params_metric(prob,cp,pv_orig,lb,ub,max_iter)
 

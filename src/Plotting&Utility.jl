@@ -72,9 +72,11 @@ end
 
 function plot_summary!(fig,pv,prob)
 
-    try
+    # try
 
         p_tuple,p_cp_tuple,p_lm_tuple = get_params(pv)
+
+        p_orig,_,_ = get_params(pv_orig)
 
         ax = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Position of 20% max } c_N \text{ } (μm) ",ygridvisible = false,xgridvisible = false,title = "w/ cmax 0.2")
         ax_por = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Average porosity, } \phi", yaxisposition = :right,ylabelcolor = :red,yticklabelcolor = :red,ygridvisible = false,xgridvisible = false,xticksvisible = false)
@@ -256,11 +258,243 @@ function plot_summary!(fig,pv,prob)
             lines!(ax4,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
         end
 
+        nodal_degr = [p_tuple[:kNL] .*(1 ./ (1 .+ (p_tuple[:LN] ./ L) .^ p_tuple[:mNL])) for L in dyn_L]
+        nodal_degr_cp = [p_cp_tuple[:kNL].*(1 ./ (1 .+ (p_cp_tuple[:LN] ./ L) .^ p_cp_tuple[:mNL])) for L in dyn_L_cp]
+
+        ax1 = Axis(fig[5,2], xlabel = L"\text{Position}", ylabel= L"k_{NL} (1 / (1 + (L_N / L)^{m_{NL}})", title = "WT")
+
+        for (i,N) in enumerate(nodal_degr)
+            lines!(ax1,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax1,position = :rt)
+
+        ax2 = Axis(fig[5,3], xlabel = L"\text{Position}", ylabel= L"k_{NL} (1 / (1 + (L_N / L)^{m_{NL}})", title = "Wnt11")
+
+        for (i,N) in enumerate(nodal_degr_cp)
+            lines!(ax2,N,label = string(alpha_data_times_norm[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
         return fig
 
-    catch DomainError
-        return "Numerical instability. Increase abstol/reltol"
-    end
+    # catch DomainError
+    #     return "Numerical instability. Increase abstol/reltol"
+    # end
+
+end
+
+function plot_summary_newtimes!(fig,pv,prob)
+
+    # try
+
+        p_tuple,p_cp_tuple,p_lm_tuple = get_params(pv)
+
+        p_orig,_,_ = get_params(pv_orig)
+
+        ax = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Position of 20% max } c_N \text{ } (μm) ",ygridvisible = false,xgridvisible = false,title = "w/ cmax 0.2")
+        ax_por = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Average porosity, } \phi", yaxisposition = :right,ylabelcolor = :red,yticklabelcolor = :red,ygridvisible = false,xgridvisible = false,xticksvisible = false)
+
+        (t_grid_alpha,dyn_alpha),(t_plot,(level_x_wt_rescaled,level_x_cp_rescaled,level_x_lm_rescaled )),(porosity_dyn,porosity_dyn_cp),c_level,(sol,sol_cp,sol_lm) = get_alpha_xmax_lambda(pv,prob,0.2);
+
+        hidexdecorations!(ax_por)
+
+        lines!(ax,t_plot,level_x_wt_rescaled,color = :black,label = L"\text{WT}")
+        lines!(ax,t_plot,level_x_cp_rescaled,color = :orange,label = L"\text{Wnt11}")
+        lines!(ax,t_plot,level_x_lm_rescaled,color = :pink,label = L"\text{Lefty mutant}")
+
+        lines!(ax_por,t_plot,porosity_dyn ,linestyle = :dash,color = :black,label = L"\text{ϕ}")
+        lines!(ax_por,t_plot,porosity_dyn_cp ,linestyle = :dash,color = :orange,label = L"\text{ϕ}")
+
+        axislegend(ax,position = :lt)
+
+        ylims!(ax_por,0.,0.14)
+
+        ax.xticks = (0:0.5:3.5,string.(0:0.5:3.5))
+
+        orig_metrics = get_summary_metrics(pv,prob,data,alpha_data,0.2)
+
+        t_plot_int = LinRange(0,3*orig_metrics[:wt_t0],t_plot_N)
+
+        νN_int_cp,νN_int = get_integrated_lefty_prod_values(sol,sol_cp,t_plot_int,p_tuple,p_cp_tuple)
+
+        # nodal_prod_cp,nodal_prod = get_integrated_nodal_prod_values(sol,sol_cp,t_plot_int)
+
+        ax = Axis(fig[1,2], xlabel = L"\text{Rescaled time} t^{'}", ylabel= L"\int_0^L ν_L(N(t,x)) dx" )
+
+        lines!(ax,LinRange(0,3,1000),νN_int_cp,linestyle = :dash,color = :grey, label = L"\text{Wnt11}")
+        lines!(ax,LinRange(0,3,1000),νN_int,color = :grey, label = L"\text{WT}")
+        
+        axislegend(ax,position = :rt)
+
+        ax = Axis(fig[1,3], xlabel = L"\text{Position}", ylabel= L"α(t)", title = "Beta = " * string(β) )
+
+        for (n,d) in enumerate(dyn_alpha[1:end-1])
+            lines!(ax,alpha_x,d, label = string(alpha_data_times_norm[n])* "* t_wt")
+            scatter!(ax,alpha_x,alpha_data[:,n+1])
+        end
+
+        axislegend(ax,position = :rb)
+
+        alpha_data_times_norm_v = [0.,0.3,0.6,0.9,1.2,1.5,1.8]
+
+        t_check =  alpha_data_times_norm_v[2:end] .* orig_metrics[:wt_t0]
+
+        prob_finite = remake(prob,tspan = (0, alpha_data_times_norm_v[end] * orig_metrics[:wt_t0]))
+
+        sol_profiles = solve(prob_finite, p = p_tuple, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
+        sol_profiles_cp = solve(prob_finite, p = p_cp_tuple, FBDF(),abstol = de_abstol,reltol = de_reltol, maxiters = 1e6,isoutofdomain = (u,p,t) -> any(x->x<0, u), saveat = t_check);
+
+        dyn_N = [sol[:,1] for sol in sol_profiles.u[1:length(t_check)]]
+        dyn_L = [sol[:,2] for sol in sol_profiles.u[1:length(t_check)]];
+        dyn_α = [sol[:,4] for sol in sol_profiles.u[1:length(t_check)]];
+
+        dyn_N_cp = [sol[:,1] for sol in sol_profiles_cp.u[1:length(t_check)]];
+        dyn_L_cp = [sol[:,2] for sol in sol_profiles_cp.u[1:length(t_check)]];
+        dyn_α_cp = [sol[:,4] for sol in sol_profiles_cp.u[1:length(t_check)]];
+
+        lefty_prod_profiles_cp = [ν.(cN,σ.(p_cp_tuple[:σL0],ϕ0,ϕ.(α)),p_cp_tuple[:NL],p_cp_tuple[:mL]) for (cN,α) in zip(dyn_N_cp,dyn_α_cp)];
+        lefty_prod_profiles = [ν.(cN,σ.(p_tuple[:σL0],ϕ0,ϕ.(α)),p_tuple[:NL],p_tuple[:mL]) for (cN,α) in zip(dyn_N,dyn_α)];
+
+        nodal_prod_profiles_cp = [ν.(cN,σ.(p_cp_tuple[:σN0],ϕ0,ϕ.(α)),p_cp_tuple[:Na],p_cp_tuple[:mN]) for (cN,α) in zip(dyn_N_cp,dyn_α_cp)];
+        nodal_prod_profiles = [ν.(cN,σ.(p_tuple[:σN0],ϕ0,ϕ.(α)),p_tuple[:Na],p_tuple[:mN]) for (cN,α) in zip(dyn_N,dyn_α)];
+
+        # dyn_N = [sol[:,1] for sol in sol_profiles.u]
+        # dyn_L = [sol[:,2] for sol in sol_profiles.u];
+
+        # dyn_N_cp = [sol[:,1] for sol in sol_profiles_cp.u];
+        # dyn_L_cp = [sol[:,2] for sol in sol_profiles_cp.u];
+
+        ax1 = Axis(fig[2,1], xlabel = L"\text{Position}", ylabel= L"\text{Nodal Concentration}", title = "WT")
+
+        for (i,N) in enumerate(dyn_N)
+            lines!(ax1,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax1,position = :rt)
+
+        ax2 = Axis(fig[2,2], xlabel = L"\text{Position}", ylabel= L"\text{Nodal Concentration}", title = "Wnt11")
+
+        for (i,N) in enumerate(dyn_N_cp)
+            lines!(ax2,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax2,position = :rt)
+
+        ax3 = Axis(fig[2,3], xlabel = L"\text{Position}", ylabel= L"\text{Lefty Concentration}", title = "WT")
+
+        for (i,N) in enumerate(dyn_L)
+            lines!(ax3,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax3,position = :rt)
+
+        ax4 = Axis(fig[3,1], xlabel = L"\text{Position}", ylabel= L"\text{Lefty Concentration}", title = "Wnt11")
+
+        for (i,N) in enumerate(dyn_L_cp)
+            lines!(ax4,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax4,position = :rt)
+
+        axt1 = Axis(fig[3,2])
+        axt2 = Axis(fig[3,3])
+
+        hidedecorations!(axt1)
+        hidedecorations!(axt2)
+
+        text_pos = [Point(-0.5,i) for i in LinRange(-1,1,6)]
+
+        for (n,p) in enumerate(p_names[1:6])
+
+            if p_tuple[p] != p_orig[p]
+                col = :red
+            else
+                col = :black
+            end
+
+            if p == :s0
+                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 15)),color = col)
+            else
+                text!(axt1,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 15)),color = col)
+            end
+        end
+
+        ylims!(axt1,-1.2,1.2)
+        ylims!(axt2,-1.2,1.2)
+        xlims!(axt1,-1.5,1.5)
+        xlims!(axt2,-1.5,1.5)
+
+        text_pos = [Point(-0.5,i) for i in LinRange(-1,1,7)]
+
+        for (n,p) in enumerate(p_names[7:end])
+
+            if p_tuple[p] != p_orig[p]
+                col = :red
+            else
+                col = :black
+            end
+
+            if p == :s0
+                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(2*p_tuple[p],digits = 15)),color = col)
+            else
+                text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 15)),color = col)
+            end
+        end
+
+        #######
+
+        ax1 = Axis(fig[4,1], xlabel = L"\text{Position}", ylabel= L"\text{Nodal production}", title = "WT")
+
+        for (i,N) in enumerate(nodal_prod_profiles)
+            lines!(ax1,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax1,position = :rt)
+
+        ax2 = Axis(fig[4,2], xlabel = L"\text{Position}", ylabel= L"\text{Nodal production}", title = "Wnt11")
+
+        for (i,N) in enumerate(nodal_prod_profiles_cp)
+            lines!(ax2,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax2,position = :rt)
+
+        ax3 = Axis(fig[4,3], xlabel = L"\text{Position}", ylabel= L"\text{Lefty production}", title = "WT")
+
+        for (i,N) in enumerate(lefty_prod_profiles)
+            lines!(ax3,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax3,position = :rt)
+
+        ax4 = Axis(fig[5,1], xlabel = L"\text{Position}", ylabel= L"\text{Lefty production}", title = "Wnt11")
+
+        for (i,N) in enumerate(lefty_prod_profiles_cp)
+            lines!(ax4,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        nodal_degr = [p_tuple[:kNL] .*(1 ./ (1 .+ (p_tuple[:LN] ./ L) .^ p_tuple[:mNL])) for L in dyn_L]
+        nodal_degr_cp = [p_cp_tuple[:kNL].*(1 ./ (1 .+ (p_cp_tuple[:LN] ./ L) .^ p_cp_tuple[:mNL])) for L in dyn_L_cp]
+
+        ax1 = Axis(fig[5,2], xlabel = L"\text{Position}", ylabel= L"k_{NL} (1 / (1 + (L_N / L)^{m_{NL}})", title = "WT")
+
+        for (i,N) in enumerate(nodal_degr)
+            lines!(ax1,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        axislegend(ax1,position = :rt)
+
+        ax2 = Axis(fig[5,3], xlabel = L"\text{Position}", ylabel= L"k_{NL} (1 / (1 + (L_N / L)^{m_{NL}})", title = "Wnt11")
+
+        for (i,N) in enumerate(nodal_degr_cp)
+            lines!(ax2,N,label = string( alpha_data_times_norm_v[2:end][i]) * "* t_wt",colormap = :viridis, color = i, colorrange = (1,length(t_check)))
+        end
+
+        return fig
+
+    # catch DomainError
+    #     return "Numerical instability. Increase abstol/reltol"
+    # end
 
 end
 

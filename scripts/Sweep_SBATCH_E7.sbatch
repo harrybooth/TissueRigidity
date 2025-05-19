@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=TissueR_ParamSweep_1000_v2
-#SBATCH --ntasks=10
+#SBATCH --ntasks=1000
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=6G
 #SBATCH --time=12:00:00

@@ -48,7 +48,7 @@ const default_mNL = mNL
 const λ = sqrt(DN0/kN0)
 const c0  = s0/(kN0*λ*(1-exp(-L/λ)))
 
-N_sim = 100000
+N_sim = 10
 
 γ = 0.8
 j = 2.

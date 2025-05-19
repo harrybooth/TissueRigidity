@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=TissueR_ParamSweep_1000_v2
-#SBATCH --ntasks=1000
+#SBATCH --ntasks=10
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=6G
-#SBATCH --time=30:00:00
+#SBATCH --time=12:00:00
 #SBATCH --partition=ncpu
 #SBATCH --mail-user=harry.booth@crick.ac.uk
 #SBATCH --mail-type=ALL

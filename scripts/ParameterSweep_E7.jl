@@ -50,7 +50,7 @@ end
 @everywhere include(srcdirx("NodalLefty_E.jl"))
 @everywhere include(srcdirx("FittingFunctions.jl"))
 
-all_experiments = ["NodalLefty_RelayDiffusion_Optimal_v2"]
+all_experiments = ["NodalLefty_DiffusionDominated_Optimal_v1"]
 
 @everywhere include(scriptsdirx("LoadData.jl"))
 
@@ -70,8 +70,6 @@ for exp_name in all_experiments
     u0[:,4] .= α0
 
     prob = ODEProblem(nodal_lefty_spatial_diff!,u0,tspan,p)
-
-    # pv_orig = [DN0,DL0,kN0,kL0,kE,kNL,σN0,σL0,Na,NL,NE,LN,s0]
 
     lb = copy(pv_orig)
     ub = copy(pv_orig)

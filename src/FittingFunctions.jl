@@ -1,5 +1,5 @@
 using Distributions
-using Optimization
+using Optimization, OptimizationOptimJL
 
 const N_samp = 5000
 const t_grid_N = 100

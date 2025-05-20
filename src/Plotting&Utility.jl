@@ -287,14 +287,14 @@ function plot_summary_newtimes!(fig,pv,prob)
 
     # try
 
-        p_tuple,p_cp_tuple,p_lm_tuple = get_params(pv)
+        p_tuple,p_cp_tuple,p_lm_tuple,p_ro_tuple = get_params_ro(pv)
 
         p_orig,_,_ = get_params(pv_orig)
 
         ax = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Position of 20% max } c_N \text{ } (μm) ",ygridvisible = false,xgridvisible = false,title = "w/ cmax 0.2")
         ax_por = Axis(fig[1,1], xlabel = L"\text{Rescaled time, t}", ylabel= L"\text{Average porosity, } \phi", yaxisposition = :right,ylabelcolor = :red,yticklabelcolor = :red,ygridvisible = false,xgridvisible = false,xticksvisible = false)
 
-        (t_grid_alpha,dyn_alpha),(t_plot,(level_x_wt_rescaled,level_x_cp_rescaled,level_x_lm_rescaled )),(porosity_dyn,porosity_dyn_cp),c_level,(sol,sol_cp,sol_lm) = get_alpha_xmax_lambda(pv,prob,0.2);
+        (t_grid_alpha,dyn_alpha),(t_plot,(level_x_wt_rescaled,level_x_cp_rescaled,level_x_lm_rescaled )),(porosity_dyn,porosity_dyn_cp),c_level,(sol,sol_cp,sol_lm),(λhalf_t,λhalf_ro_t) = get_alpha_xmax_lambda(pv,prob,0.2);
 
         hidexdecorations!(ax_por)
 
@@ -419,8 +419,10 @@ function plot_summary_newtimes!(fig,pv,prob)
             end
         end
 
-        ylims!(axt1,-1.2,1.2)
-        ylims!(axt2,-1.2,1.2)
+        text!(axt1,-0.5,-1.5,text = "normal : " * string(round(λhalf_t,digits = 2)),color = :blue)
+
+        ylims!(axt1,-1.8,1.8)
+        ylims!(axt2,-1.8,1.8)
         xlims!(axt1,-1.5,1.5)
         xlims!(axt2,-1.5,1.5)
 
@@ -440,6 +442,10 @@ function plot_summary_newtimes!(fig,pv,prob)
                 text!(axt2,text_pos[n], text = p_names_string[p] * " = " * string(round(p_tuple[p],digits = 15)),color = col)
             end
         end
+
+        text!(axt2,-0.5,-1.5,text = "ro : " * string(round(λhalf_ro_t,digits = 2)),color = :blue)
+
+        text!(axt2,-0.5,-1.7,text = "ratio ro/normal : " * string(round(λhalf_ro_t / λhalf_t,digits = 2)),color = :orange)
 
         #######
 

@@ -86,23 +86,23 @@ function check_inbounds(pv,lb,ub)
     end
 end
 
-# function get_lambda_half(sol,t_range)
-#     c0_t = [maximum(sol(t)[:,1]) for t in t_range] .- 1e-10
-
-#     λhalf_id = [findall(sol(t)[:,1] .- 1e-10 .> 0.5*c0) for (t,c0) in zip(t_range,c0_t)]
-#     λhalf_x = [length(id_list) != 0 ? tissue[maximum(id_list)] : 0. for id_list in λhalf_id];
-
-#     λhalf_x, t_range[argmax(λhalf_x)]
-# end
-
 function get_lambda_half(sol,t_range)
     c0_t = [maximum(sol(t)[:,1]) for t in t_range] .- 1e-10
 
     λhalf_id = [findall(sol(t)[:,1] .- 1e-10 .> 0.5*c0) for (t,c0) in zip(t_range,c0_t)]
     λhalf_x = [length(id_list) != 0 ? tissue[maximum(id_list)] : 0. for id_list in λhalf_id];
 
-    λhalf_x, t_range[maximum(findall(x->x==maximum(λhalf_x),λhalf_x))]
+    λhalf_x, t_range[argmax(λhalf_x)]
 end
+
+# function get_lambda_half(sol,t_range)
+#     c0_t = [maximum(sol(t)[:,1]) for t in t_range] .- 1e-10
+
+#     λhalf_id = [findall(sol(t)[:,1] .- 1e-10 .> 0.5*c0) for (t,c0) in zip(t_range,c0_t)]
+#     λhalf_x = [length(id_list) != 0 ? tissue[maximum(id_list)] : 0. for id_list in λhalf_id];
+
+#     λhalf_x, t_range[maximum(findall(x->x==maximum(λhalf_x),λhalf_x))]
+# end
 
 function mse_xmax_profiles(sol,sol_cp,wt_t0,c_level,xmax_profile_wt,xmax_profile_cp)
 

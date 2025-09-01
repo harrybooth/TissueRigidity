@@ -14,8 +14,6 @@ const exp_times_times_norm = exp_times ./ exp_t0_wt;
 alpha_data = XLSX.readxlsx(scriptsdirx() * "/SmadCalibrationData.xlsx")["WT_alpha"] 
 alpha_data = XLSX.eachtablerow(alpha_data) |> DataFrames.DataFrame
 
-# const alpha_data_times = [0,30,60,90,120] .* 60
-
 const alpha_data_times = [0,30,60,90,120,150] .* 60
 
 const alpha_positions = Float64.(alpha_data[:,"Position"])
@@ -25,9 +23,6 @@ const alpha_x = Int.((alpha_positions[1:end]  .+ 15))
 const alpha_data_times_norm = alpha_data_times ./ exp_t0_wt
 
 function get_exp_summary_metrics(xmax_data)
-
-    exp_t0_wt
-    exp_t0_cp
 
     wt_xMax = maximum(xmax_data[:,"WT"])
     cp_xMax = maximum(xmax_data[:,"SLB"])

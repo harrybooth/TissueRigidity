@@ -40,13 +40,11 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
 
     corr = log.(β .+ (1 - β) .* ϕ.(α))
 
-    # corr = log.(0 .+ (1 - 0) .* ϕ.(α))
-
     h = 1/dx^2
     h1 = 1/dx
 
-    dN[1] = DN[1]*h*(N[2] - N[1] + (s0/DN[1])) - ( ( h1*(DN[2] - DN[1])*N[1] + h1*DN[1]*(N[2] - N[1]) ) * h1*(corr[2] - corr[1]) + h*DN[1]*N[1]*(2*corr[1] - 5*corr[2] + 4*corr[3] - corr[4])) - kN[1]*N[1] - kNL*N[1]*(1/(1+(LN/L[1])^mNL)) + ν(N[1],σN[1],Na,mN)
-    dL[1] = DL[1]*h*(L[2] - L[1]) - ( ( h1*(DL[2] - DL[1])*L[1] + h1*DL[1]*(L[2] - L[1]) ) * h1*(corr[2] - corr[1]) + h*DL[1]*L[1]*(2*corr[1] - 5*corr[2] + 4*corr[3] - corr[4])) - kL[1]*L[1] + ν(L[1],σL[1],NL,mL)
+    dN[1] = DN[2]*h*(N[2] - N[1]) + h1*s0 - ( ( h1*(DN[2] - DN[1])*N[1] + h1*DN[1]*(N[2] - N[1]) ) * h1*(corr[2] - corr[1]) + h*DN[1]*N[1]*(2*corr[1] - 5*corr[2] + 4*corr[3] - corr[4])) - kN[1]*N[1] - kNL*N[1]*(1/(1+(LN/L[1])^mNL)) + ν(N[1],σN[1],Na,mN)
+    dL[1] = DL[2]*h*(L[2] - L[1]) - ((h1*(DL[2] - DL[1])*L[1] + h1*DL[1]*(L[2] - L[1])) * h1*(corr[2] - corr[1]) + h*DL[1]*L[1]*(2*corr[1] - 5*corr[2] + 4*corr[3] - corr[4])) - kL[1]*L[1] + ν(N[1],σL[1],NL,mL)
     dE[1] = ν(N[1],σE,NE,1) - kE*E[1]
     dα[1] =  -((E[1] + α0^(-1))^(-2))*(ν(N[1],σE,NE,1) - kE*E[1])
 
@@ -58,7 +56,7 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
     end
 
     dN[Nc] = DN[Nc]*h*(N[Nc-1] - N[Nc]) - ( ( h1*(2*DN[Nc] - 3*DN[Nc-1] + DN[Nc-2])*N[Nc] ) * h1*(2*corr[Nc] - 3*corr[Nc-1] + corr[Nc-2]) + h*DN[Nc]*N[Nc]*(2*corr[Nc] - 5*corr[Nc-1] + 4*corr[Nc-2]  - corr[Nc-3]) ) - kN[Nc]*N[Nc] - kNL*N[Nc]*(1/(1+(LN/L[Nc])^mNL)) + ν(N[Nc],σN[Nc],Na,mN)
-    dL[Nc] = DL[Nc]*h*(L[Nc-1] - L[Nc]) - ( ( h1*(2*DL[Nc] - 3*DL[Nc-1] + DL[Nc-2])*L[Nc] ) * h1*(2*corr[Nc] - 3*corr[Nc-1] + corr[Nc-2]) + h*DL[Nc]*L[Nc]*(2*corr[Nc] - 5*corr[Nc-1] + 4*corr[Nc-2]  - corr[Nc-3]) ) - kL[Nc]*L[Nc] + ν(L[Nc],σL[Nc],NL,mL)
+    dL[Nc] = DL[Nc]*h*(L[Nc-1] - L[Nc]) - ( ( h1*(2*DL[Nc] - 3*DL[Nc-1] + DL[Nc-2])*L[Nc] ) * h1*(2*corr[Nc] - 3*corr[Nc-1] + corr[Nc-2]) + h*DL[Nc]*L[Nc]*(2*corr[Nc] - 5*corr[Nc-1] + 4*corr[Nc-2]  - corr[Nc-3]) ) - kL[Nc]*L[Nc] + ν(N[Nc],σL[Nc],NL,mL)
     dE[Nc] = ν(N[Nc],σE,NE,1) - kE*E[Nc]
     dα[Nc] =  -((E[Nc] + α0^(-1))^(-2))*(ν(N[Nc],σE,NE,1) - kE*E[Nc])
 

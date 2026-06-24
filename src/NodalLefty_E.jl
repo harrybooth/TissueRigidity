@@ -39,9 +39,10 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
     σE = E_star*kE
 
     h = 1/dx^2
+    h1 = 1/dx
 
-    dN[1] = DN[1]*h*(N[2] - N[1] + (s0/DN[1])) - kN[1]*N[1] - kNL*N[1]*(1/(1+(LN/L[1])^mNL)) + ν(N[1],σN[1],Na,mN)
-    dL[1] = DL[1]*h*(L[2] - L[1]) - kL[1]*L[1] + ν(L[1],σL[1],NL,mL)
+    dN[1] = DN[2]*h*(N[2] - N[1]) + h1*s0 - kN[1]*N[1] - kNL*N[1]*(1/(1+(LN/L[1])^mNL)) + ν(N[1],σN[1],Na,mN)
+    dL[1] = DL[2]*h*(L[2] - L[1]) - kL[1]*L[1] + ν(N[1],σL[1],NL,mL)
     dE[1] = ν(N[1],σE,NE,1) - kE*E[1]
     dα[1] =  -((E[1] + α0^(-1))^(-2))*(ν(N[1],σE,NE,1) - kE*E[1])
 
@@ -53,7 +54,7 @@ function nodal_lefty_spatial_diff!(du,u,p,t)
     end
 
     dN[Nc] = DN[Nc]*h*(N[Nc-1] - N[Nc]) - kN[Nc]*N[Nc] - kNL*N[Nc]*(1/(1+(LN/L[Nc])^mNL)) + ν(N[Nc],σN[Nc],Na,mN)
-    dL[Nc] = DL[Nc]*h*(L[Nc-1] - L[Nc]) - kL[Nc]*L[Nc] + ν(L[Nc],σL[Nc],NL,mL)
+    dL[Nc] = DL[Nc]*h*(L[Nc-1] - L[Nc]) - kL[Nc]*L[Nc] + ν(N[Nc],σL[Nc],NL,mL)
     dE[Nc] = ν(N[Nc],σE,NE,1) - kE*E[Nc]
     dα[Nc] =  -((E[Nc] + α0^(-1))^(-2))*(ν(N[Nc],σE,NE,1) - kE*E[Nc])
 

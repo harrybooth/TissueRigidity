@@ -709,7 +709,6 @@ function loss_tuple(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = fa
     # return alpha_mse, inc_met
 end
 
-
 function loss_no_alpha(p_vector,prob,xmax_data,alpha_data,cp,norm = false,half = false)
 
     p,p_cp,p_lm = get_params(p_vector)

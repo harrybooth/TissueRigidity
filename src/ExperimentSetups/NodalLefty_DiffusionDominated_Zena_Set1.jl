@@ -5,16 +5,15 @@ const kL0 = 7.465310302629284e-7
 const kE =  0.8*0.00028852347539516876
 const kNL = 10.303407667201299
 const σN0 = 10*0.1*0.01
-const σL0 = 0.00046538852919702296 # alpha_L in Diana?
+const σL0 = 0.00046538852919702296 
 const Na = 31.6228
-# const NL = 181.38301582100422
 const NL = 200.
 const NE = 15.
-const mN = 2 # ma in Diana?
+const mN = 2 
 const mL = 8 
 const mNL = 2
 const LN = 19.150715022082355
-const s0 = 5. # s0 / 2 as diana scales by dx/2
+const s0 = 5. 
 
 
 ############
@@ -30,7 +29,6 @@ const ϕ_min = 0.001;
 
 const α_min = 0.7
 const α0 = 0.881586152184903
-# const α0 = 0.89
 const ϕ0 = ϕ(α0)
 # const β = 1.
 const β = 0.1

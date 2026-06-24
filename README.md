@@ -5,7 +5,11 @@ This code base is using the [Julia Language](https://julialang.org/) and
 to make a reproducible scientific project named
 > TissueRigidity
 
-It is authored by Harry Booth.
+to accompany the paper
+
+Autorino, C., Khoromskaia, D., Harari, L., Floris, E., Booth, H., Pallares-Cartes, C., ... & Petridou, N. I. (2026). Tissue rigidity phase transition shapes morphogen gradients. Nature Cell Biology, 1-13.
+
+The codebase is authored by Harry Booth.
 
 To (locally) reproduce this project, do the following:
 
